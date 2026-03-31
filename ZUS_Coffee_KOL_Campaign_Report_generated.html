@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZUS Coffee</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --zus-blue: #2F3F8F; --zus-blue-soft: #4D5FB5; --zus-blue-pale: #E8ECFF; --bg: #F6F8FF;
+    --ink: #111C44; --ink-muted: #3D497E; --ink-soft: #6471A6; --deep: #1F2B66;
+    --reel: #3752C8; --reel-light: #E8EDFF; --post: #2E3E8E; --post-light: #E3E9FF;
+    --border: rgba(47,63,143,0.22); --shadow: 0 4px 28px rgba(31,43,102,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.6; }
+  .report-header { background: var(--zus-blue); color: white; padding: 56px 64px 40px; position: relative; overflow: hidden; }
+  .report-header::after { content: 'ZUS'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }
+  .header-tag { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #CBD5FF; margin-bottom: 14px; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }
+  .header-sub { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+  .header-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #CBD5FF; font-weight: 600; }
+  .meta-value { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.92); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 42px 30px; }
+  .section { margin-bottom: 48px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 700; margin-bottom: 20px; color: var(--deep); }
+  .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .overview-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; box-shadow: var(--shadow); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }
+  .stat-label { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .stat-sublabel { font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
+  .stat-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }
+  .badge-post { background: var(--post-light); color: var(--post); }
+  .badge-reel { background: var(--reel-light); color: var(--reel); }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-card { border-radius: 14px; padding: 24px; border: 1.5px solid; background: white; }
+  .compare-card.posts { border-color: rgba(46,62,142,0.36); }
+  .compare-card.reels { border-color: rgba(55,82,200,0.36); }
+  .compare-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .compare-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+  .compare-row:last-child { border: none; }
+  .compare-row-label { color: var(--ink-muted); font-weight: 500; }
+  .compare-row-val { font-weight: 700; color: var(--deep); font-size: 14px; }
+  .verdict { margin-top: 20px; padding: 16px 18px; background: var(--zus-blue-pale); border-left: 4px solid var(--zus-blue); border-radius: 10px; font-size: 13px; color: var(--deep); }
+  .highlights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .highlight-section-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .top3-group { margin-bottom: 16px; }
+  .top3-label { font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .top3-list { display: flex; flex-direction: column; gap: 8px; }
+  .top3-item { display: flex; align-items: center; gap: 10px; background: white; border-radius: 8px; padding: 9px 12px; border: 1px solid var(--border); }
+  .rank-badge { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .rank-1 { background: #FFD700; color: #5A3800; } .rank-2 { background: #C0C0C0; color: #333; } .rank-3 { background: #CD7F32; color: #fff; }
+  .top3-username { font-weight: 600; font-size: 13px; flex: 1; } .top3-val { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px; }
+  .table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); background: white; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; background: white; }
+  thead tr { background: var(--zus-blue); color: rgba(255,255,255,0.92); }
+  th { padding: 11px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; padding-left: 16px; }
+  tbody tr { border-bottom: 1px solid rgba(47,63,143,0.1); }
+  td { padding: 10px 10px; font-size: 12.5px; text-align: center; color: var(--ink-muted); }
+  td.num { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--deep); }
+  td.er { font-weight: 700; color: var(--deep); }
+  td a { color: var(--zus-blue); text-decoration: none; font-weight: 600; }
+  td a:hover { text-decoration: underline; }
+  .tag { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+  .tag-outstanding { background: #EEF2FF; color: #1F2B66; } .tag-above { background: #DFE6FF; color: #22307A; } .tag-average { background: #F0F2FF; color: #4D5FB5; }
+  .tag-below { background: #FFF0E8; color: #A24E1E; } .tag-under { background: #FCE4E4; color: #8B1010; } .tag-highly { background: #E5EAFF; color: #25358B; }
+  .tag-engaging { background: #EAF0FF; color: #2A3E9D; } .tag-moderate { background: #F0F2FF; color: #4D5FB5; } .tag-low { background: #FFF0E8; color: #A24E1E; } .tag-minimal { background: #FCE4E4; color: #8B1010; }
+  .appendix-note { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }
+  footer { background: var(--zus-blue); color: rgba(255,255,255,0.6); text-align: center; padding: 20px; font-size: 11px; }
+  @media (max-width: 800px) {
+    .report-header { padding: 32px 20px; }
+    .container { padding: 24px 12px; }
+    .overview-grid, .overview-grid-2, .compare-grid, .highlights-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="report-header">
+  <div class="header-tag">KOL Campaign Report</div>
+  <div class="header-title">ZUS Coffee</div>
+  <div class="header-sub">Instagram Influencer Performance Report</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
+    <div class="meta-item"><span class="meta-label">KOL Rows</span><span class="meta-value">91</span></div>
+    <div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">80</span></div>
+    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">88</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">Campaign Overview</div>
+    <div class="overview-grid">
+      <div class="stat-card"><div class="stat-badge badge-post">📷 Posts</div><div class="stat-num">103,665</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across 80 KOL rows with Post data</div></div>
+      <div class="stat-card"><div class="stat-badge badge-reel">🎬 Reels</div><div class="stat-num">126,392</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 88 KOL rows with Reels data</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--zus-blue)">230,057</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels</div></div>
+    </div>
+    <div class="overview-grid overview-grid-2">
+      <div class="stat-card"><div class="stat-badge badge-post">📷 Post Engagement</div><div class="stat-num">6,051</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 5,720 · Comments 226 · Shares 53 · Saves 52</div></div>
+      <div class="stat-card"><div class="stat-badge badge-reel">🎬 Reel Engagement</div><div class="stat-num">6,346</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 5,379 · Comments 229 · Shares 698 · Saves 40</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Posts vs. Reels Performance</div>
+    <div class="compare-grid">
+      <div class="compare-card posts">
+        <div class="compare-title" style="color:var(--post)">📷 Posts</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">103,665</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">5,720</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">226</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">53</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">37</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">52</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">1,296</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">7.22%</span></div>
+      </div>
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)">🎬 Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">126,392</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">5,379</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">229</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">698</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">162</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">40</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">1,436</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">3.92%</span></div>
+      </div>
+    </div>
+    <div class="verdict"><strong>Key Takeaway:</strong> Reels led reach by <strong>22,727 views</strong> (21.92% difference), while Posts delivered stronger proportional engagement per view on average.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top 3 Highlights</div>
+    <div class="highlights-grid">
+      <div>
+        <div class="highlight-section-title" style="color:var(--post)">📷 Posts</div>
+        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></div>
+                  <div class="top3-val">7,731</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></div>
+                  <div class="top3-val">5,057</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></div>
+                  <div class="top3-val">4,089</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></div>
+                  <div class="top3-val">31</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></div>
+                  <div class="top3-val">18</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></div>
+                  <div class="top3-val">17</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></div>
+                  <div class="top3-val">8</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></div>
+                  <div class="top3-val">7</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></div>
+                  <div class="top3-val">5</div>
+                </div>
+                </div></div>
+      </div>
+      <div>
+        <div class="highlight-section-title" style="color:var(--reel)">🎬 Reels</div>
+        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></div>
+                  <div class="top3-val">16,052</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">@jjinatcha</a></div>
+                  <div class="top3-val">6,689</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">@bestktsz</a></div>
+                  <div class="top3-val">6,458</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></div>
+                  <div class="top3-val">42</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></div>
+                  <div class="top3-val">22</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></div>
+                  <div class="top3-val">12</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username"><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></div>
+                  <div class="top3-val">11</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username"><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></div>
+                  <div class="top3-val">9</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username"><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></div>
+                  <div class="top3-val">4</div>
+                </div>
+                </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KOL Performance Tables</div>
+    <div class="appendix-note">
+      <strong>Post Benchmarks:</strong><br>
+      Views Mean 1,296, SD 1,208<br>
+      ER Mean 7.22%, SD 9.60%<br><br>
+      <strong>Reels Benchmarks:</strong><br>
+      Views Mean 1,436, SD 1,999<br>
+      ER Mean 3.92%, SD 3.02%
+    </div>
+    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--post)">📷 Posts Performance Table</div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+        <tbody>
+                <tr>
+                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></td>
+                  <td class="num">7,731</td>
+                  <td class="num">107</td>
+                  <td>0</td>
+                  <td>8</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td class="er">1.53%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></td>
+                  <td class="num">5,057</td>
+                  <td class="num">246</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>8</td>
+                  <td class="er">5.16%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td class="num">4,089</td>
+                  <td class="num">86</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.10%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></td>
+                  <td class="num">4,057</td>
+                  <td class="num">208</td>
+                  <td>2</td>
+                  <td>5</td>
+                  <td>2</td>
+                  <td>7</td>
+                  <td class="er">5.47%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">@ffamee_10</a></td>
+                  <td class="num">3,571</td>
+                  <td class="num">76</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td class="er">2.13%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">@bestktsz</a></td>
+                  <td class="num">3,029</td>
+                  <td class="num">87</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.97%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">@jjinatcha</a></td>
+                  <td class="num">2,955</td>
+                  <td class="num">867</td>
+                  <td>4</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">29.81%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td class="num">2,789</td>
+                  <td class="num">50</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">1.90%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">@rinya.pmt</a></td>
+                  <td class="num">2,429</td>
+                  <td class="num">112</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">4.65%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">@fanlytwin_s</a></td>
+                  <td class="num">2,405</td>
+                  <td class="num">165</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">7.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">@benjamin.akt</a></td>
+                  <td class="num">2,318</td>
+                  <td class="num">85</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.84%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">@haendibae</a></td>
+                  <td class="num">2,186</td>
+                  <td class="num">62</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">2.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">@mayujangg</a></td>
+                  <td class="num">2,078</td>
+                  <td class="num">70</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td class="er">3.46%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">@sutharinee._</a></td>
+                  <td class="num">1,976</td>
+                  <td class="num">98</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">@teara_faa</a></td>
+                  <td class="num">1,943</td>
+                  <td class="num">76</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">@ssarochaa_</a></td>
+                  <td class="num">1,894</td>
+                  <td class="num">96</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">5.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">@sasi.care</a></td>
+                  <td class="num">1,883</td>
+                  <td class="num">159</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td class="er">8.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">@puynoon.22</a></td>
+                  <td class="num">1,822</td>
+                  <td class="num">96</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.27%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">@paevass</a></td>
+                  <td class="num">1,792</td>
+                  <td class="num">72</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.02%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">@aaeeyyy</a></td>
+                  <td class="num">1,732</td>
+                  <td class="num">140</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td class="er">8.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">@biwbewbill.biw</a></td>
+                  <td class="num">1,644</td>
+                  <td class="num">60</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.83%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">@milkjarin</a></td>
+                  <td class="num">1,606</td>
+                  <td class="num">105</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">@saiparncm</a></td>
+                  <td class="num">1,492</td>
+                  <td class="num">63</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">4.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">@rubybelles_</a></td>
+                  <td class="num">1,461</td>
+                  <td class="num">42</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">3.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></td>
+                  <td class="num">1,358</td>
+                  <td class="num">22</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">1.84%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">@naritta_ndi</a></td>
+                  <td class="num">1,325</td>
+                  <td class="num">34</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.79%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">@yanipans</a></td>
+                  <td class="num">1,269</td>
+                  <td class="num">109</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">9.46%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">@litaltp</a></td>
+                  <td class="num">1,256</td>
+                  <td class="num">56</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.78%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">@da_chadon</a></td>
+                  <td class="num">1,244</td>
+                  <td class="num">53</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.26%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">@ingynesss</a></td>
+                  <td class="num">1,243</td>
+                  <td class="num">67</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.39%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">@thisisnan.nan</a></td>
+                  <td class="num">1,194</td>
+                  <td class="num">85</td>
+                  <td>14</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.38%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">@peacheryas</a></td>
+                  <td class="num">1,145</td>
+                  <td class="num">57</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">6.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">@aramugfront</a></td>
+                  <td class="num">1,119</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.45%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></td>
+                  <td class="num">1,018</td>
+                  <td class="num">21</td>
+                  <td>3</td>
+                  <td>12</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">4.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">@puntarita.k</a></td>
+                  <td class="num">1,013</td>
+                  <td class="num">74</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">7.80%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">@melonmo</a></td>
+                  <td class="num">947</td>
+                  <td class="num">40</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">4.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">@famsrwpp</a></td>
+                  <td class="num">941</td>
+                  <td class="num">30</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.19%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">@_pewbo</a></td>
+                  <td class="num">928</td>
+                  <td class="num">39</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></td>
+                  <td class="num">910</td>
+                  <td class="num">32</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">@sahutsaya</a></td>
+                  <td class="num">901</td>
+                  <td class="num">76</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">@miteen.pn_</a></td>
+                  <td class="num">854</td>
+                  <td class="num">26</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.04%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">@melairvoyante</a></td>
+                  <td class="num">844</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">@mycookie.house_</a></td>
+                  <td class="num">823</td>
+                  <td class="num">21</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.55%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">@pyanisa</a></td>
+                  <td class="num">821</td>
+                  <td class="num">42</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.60%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">@dianadanai_</a></td>
+                  <td class="num">816</td>
+                  <td class="num">56</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">@giftster__</a></td>
+                  <td class="num">816</td>
+                  <td class="num">22</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">3.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">@minddyspm</a></td>
+                  <td class="num">754</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">@grace.isgrace</a></td>
+                  <td class="num">749</td>
+                  <td class="num">40</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">5.74%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">@ptp.ev</a></td>
+                  <td class="num">733</td>
+                  <td class="num">48</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">7.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></td>
+                  <td class="num">711</td>
+                  <td class="num">89</td>
+                  <td>18</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">15.19%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">@namsomort_</a></td>
+                  <td class="num">701</td>
+                  <td class="num">26</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">@prombin</a></td>
+                  <td class="num">688</td>
+                  <td class="num">42</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">@nanseingleinkham</a></td>
+                  <td class="num">682</td>
+                  <td class="num">35</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">5.57%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">@arpowang</a></td>
+                  <td class="num">678</td>
+                  <td class="num">20</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></td>
+                  <td class="num">660</td>
+                  <td class="num">162</td>
+                  <td>31</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">29.24%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">@grace.phapada</a></td>
+                  <td class="num">640</td>
+                  <td class="num">54</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">9.84%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">@natachaa___x</a></td>
+                  <td class="num">632</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.49%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">@nannykkjk</a></td>
+                  <td class="num">626</td>
+                  <td class="num">325</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">52.88%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></td>
+                  <td class="num">622</td>
+                  <td class="num">30</td>
+                  <td>17</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">7.56%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">@best.lingnoii</a></td>
+                  <td class="num">604</td>
+                  <td class="num">66</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">10.93%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">@kunyingkunya</a></td>
+                  <td class="num">601</td>
+                  <td class="num">33</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">5.99%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">@sommickez</a></td>
+                  <td class="num">594</td>
+                  <td class="num">41</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.25%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">@milkiesz</a></td>
+                  <td class="num">588</td>
+                  <td class="num">18</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.74%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">@vousbeemvoyez</a></td>
+                  <td class="num">526</td>
+                  <td class="num">11</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.47%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">@bunnysp.pp</a></td>
+                  <td class="num">494</td>
+                  <td class="num">39</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.30%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">@f.fahhhc</a></td>
+                  <td class="num">468</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">@jantip.kob</a></td>
+                  <td class="num">468</td>
+                  <td class="num">16</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/rinirinstory" target="_blank" rel="noopener noreferrer">@rinirinstory</a></td>
+                  <td class="num">462</td>
+                  <td class="num">23</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.84%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">@dish.is.dietfood</a></td>
+                  <td class="num">411</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.68%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">@madmeecyn</a></td>
+                  <td class="num">383</td>
+                  <td class="num">31</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">@zmprw.psps</a></td>
+                  <td class="num">383</td>
+                  <td class="num">36</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">9.40%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">@babyjesse.ducky</a></td>
+                  <td class="num">374</td>
+                  <td class="num">22</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">@dedeehappy</a></td>
+                  <td class="num">352</td>
+                  <td class="num">11</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.41%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">@eellyyrose</a></td>
+                  <td class="num">341</td>
+                  <td class="num">27</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">7.92%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">@jamjampp</a></td>
+                  <td class="num">235</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.40%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">@c.hompink</a></td>
+                  <td class="num">229</td>
+                  <td class="num">3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.31%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">@weerachai_sinchai</a></td>
+                  <td class="num">160</td>
+                  <td class="num">106</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">66.25%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">@aa_pornthip</a></td>
+                  <td class="num">158</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">@guitargero_</a></td>
+                  <td class="num">150</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></td>
+                  <td class="num">84</td>
+                  <td class="num">6</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">9.52%</td>
+                  <td><span class="tag tag-below">👁️ 🔸 Below Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--reel)">🎬 Reels Performance Table</div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+        <tbody>
+                <tr>
+                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></td>
+                  <td class="num">16,052</td>
+                  <td class="num">1,746</td>
+                  <td>1</td>
+                  <td>584</td>
+                  <td>115</td>
+                  <td>9</td>
+                  <td class="er">14.58%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">@jjinatcha</a></td>
+                  <td class="num">6,689</td>
+                  <td class="num">766</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">11.53%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">@bestktsz</a></td>
+                  <td class="num">6,458</td>
+                  <td class="num">39</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">0.65%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">@nannykkjk</a></td>
+                  <td class="num">5,469</td>
+                  <td class="num">224</td>
+                  <td>7</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td class="er">4.28%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></td>
+                  <td class="num">3,798</td>
+                  <td class="num">100</td>
+                  <td>4</td>
+                  <td>13</td>
+                  <td>4</td>
+                  <td>4</td>
+                  <td class="er">3.19%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></td>
+                  <td class="num">3,728</td>
+                  <td class="num">19</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">0.67%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">@ffamee_10</a></td>
+                  <td class="num">3,495</td>
+                  <td class="num">124</td>
+                  <td>2</td>
+                  <td>7</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">3.81%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">@ptp.ev</a></td>
+                  <td class="num">2,793</td>
+                  <td class="num">81</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.08%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">@puntarita.k</a></td>
+                  <td class="num">2,783</td>
+                  <td class="num">10</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">0.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">@naritta_ndi</a></td>
+                  <td class="num">2,684</td>
+                  <td class="num">14</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">0.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">@aramugfront</a></td>
+                  <td class="num">2,445</td>
+                  <td class="num">20</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">@giftster__</a></td>
+                  <td class="num">2,315</td>
+                  <td class="num">50</td>
+                  <td>9</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.59%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">@rinya.pmt</a></td>
+                  <td class="num">2,197</td>
+                  <td class="num">132</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">6.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bbeembenja" target="_blank" rel="noopener noreferrer">@bbeembenja</a></td>
+                  <td class="num">2,158</td>
+                  <td class="num">45</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.09%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td class="num">2,078</td>
+                  <td class="num">16</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">0.82%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ploira.o5" target="_blank" rel="noopener noreferrer">@ploira.o5</a></td>
+                  <td class="num">2,068</td>
+                  <td class="num">113</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.61%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></td>
+                  <td class="num">2,060</td>
+                  <td class="num">54</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">@famsrwpp</a></td>
+                  <td class="num">1,972</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.76%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">@da_chadon</a></td>
+                  <td class="num">1,923</td>
+                  <td class="num">74</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.85%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">@puynoon.22</a></td>
+                  <td class="num">1,799</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.28%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">@vousbeemvoyez</a></td>
+                  <td class="num">1,760</td>
+                  <td class="num">64</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></td>
+                  <td class="num">1,667</td>
+                  <td class="num">55</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="er">3.54%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">@mayujangg</a></td>
+                  <td class="num">1,651</td>
+                  <td class="num">55</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">3.57%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">@grace.phapada</a></td>
+                  <td class="num">1,593</td>
+                  <td class="num">31</td>
+                  <td>10</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.64%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></td>
+                  <td class="num">1,538</td>
+                  <td class="num">150</td>
+                  <td>22</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">11.31%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">@fanlytwin_s</a></td>
+                  <td class="num">1,458</td>
+                  <td class="num">43</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.95%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">@paevass</a></td>
+                  <td class="num">1,446</td>
+                  <td class="num">48</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">3.46%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">@teara_faa</a></td>
+                  <td class="num">1,412</td>
+                  <td class="num">35</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.48%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">@litaltp</a></td>
+                  <td class="num">1,370</td>
+                  <td class="num">3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.22%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></td>
+                  <td class="num">1,274</td>
+                  <td class="num">32</td>
+                  <td>12</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td class="er">4.40%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></td>
+                  <td class="num">1,248</td>
+                  <td class="num">43</td>
+                  <td>42</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">6.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">@saiparncm</a></td>
+                  <td class="num">1,192</td>
+                  <td class="num">9</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">@benjamin.akt</a></td>
+                  <td class="num">1,159</td>
+                  <td class="num">38</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.45%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td class="num">1,156</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">1.12%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">@sutharinee._</a></td>
+                  <td class="num">1,139</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">1.14%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mieispalmmie" target="_blank" rel="noopener noreferrer">@mieispalmmie</a></td>
+                  <td class="num">1,094</td>
+                  <td class="num">18</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">1.92%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">@melonmo</a></td>
+                  <td class="num">1,077</td>
+                  <td class="num">32</td>
+                  <td>6</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">@sasi.care</a></td>
+                  <td class="num">1,031</td>
+                  <td class="num">69</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">7.08%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">@melairvoyante</a></td>
+                  <td class="num">1,027</td>
+                  <td class="num">31</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.12%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">@thisisnan.nan</a></td>
+                  <td class="num">998</td>
+                  <td class="num">41</td>
+                  <td>11</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td class="er">5.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">@milkiesz</a></td>
+                  <td class="num">974</td>
+                  <td class="num">36</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.52%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">@_pewbo</a></td>
+                  <td class="num">921</td>
+                  <td class="num">25</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.15%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">@prombin</a></td>
+                  <td class="num">875</td>
+                  <td class="num">36</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.11%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/cindy_lxs" target="_blank" rel="noopener noreferrer">@cindy_lxs</a></td>
+                  <td class="num">865</td>
+                  <td class="num">25</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.89%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">@ingynesss</a></td>
+                  <td class="num">865</td>
+                  <td class="num">41</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">@yanipans</a></td>
+                  <td class="num">865</td>
+                  <td class="num">55</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">6.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">@sahutsaya</a></td>
+                  <td class="num">841</td>
+                  <td class="num">19</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.26%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">@namsomort_</a></td>
+                  <td class="num">838</td>
+                  <td class="num">50</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.21%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">@pyanisa</a></td>
+                  <td class="num">749</td>
+                  <td class="num">25</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.27%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">@arpowang</a></td>
+                  <td class="num">707</td>
+                  <td class="num">23</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.25%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/pritez_qp" target="_blank" rel="noopener noreferrer">@pritez_qp</a></td>
+                  <td class="num">676</td>
+                  <td class="num">15</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">@ssarochaa_</a></td>
+                  <td class="num">675</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.78%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">@kunyingkunya</a></td>
+                  <td class="num">644</td>
+                  <td class="num">31</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">@peacheryas</a></td>
+                  <td class="num">644</td>
+                  <td class="num">36</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></td>
+                  <td class="num">630</td>
+                  <td class="num">26</td>
+                  <td>10</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">6.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">@dish.is.dietfood</a></td>
+                  <td class="num">625</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">1.28%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/orr.______" target="_blank" rel="noopener noreferrer">@orr.______</a></td>
+                  <td class="num">624</td>
+                  <td class="num">29</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.65%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">@dianadanai_</a></td>
+                  <td class="num">622</td>
+                  <td class="num">25</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.18%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">@aaeeyyy</a></td>
+                  <td class="num">620</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.68%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">@grace.isgrace</a></td>
+                  <td class="num">605</td>
+                  <td class="num">19</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td class="er">3.80%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">@milkjarin</a></td>
+                  <td class="num">590</td>
+                  <td class="num">22</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.73%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">@miteen.pn_</a></td>
+                  <td class="num">577</td>
+                  <td class="num">16</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">@rubybelles_</a></td>
+                  <td class="num">567</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.12%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></td>
+                  <td class="num">559</td>
+                  <td class="num">41</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">8.23%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">@mycookie.house_</a></td>
+                  <td class="num">535</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.80%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">@best.lingnoii</a></td>
+                  <td class="num">525</td>
+                  <td class="num">6</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.14%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">@minddyspm</a></td>
+                  <td class="num">521</td>
+                  <td class="num">11</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.50%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">@jantip.kob</a></td>
+                  <td class="num">504</td>
+                  <td class="num">11</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.78%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">@biwbewbill.biw</a></td>
+                  <td class="num">500</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.60%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bobo_lovely" target="_blank" rel="noopener noreferrer">@bobo_lovely</a></td>
+                  <td class="num">472</td>
+                  <td class="num">5</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.91%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">@haendibae</a></td>
+                  <td class="num">471</td>
+                  <td class="num">23</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">5.73%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">@bunnysp.pp</a></td>
+                  <td class="num">427</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.87%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">@aa_pornthip</a></td>
+                  <td class="num">397</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.02%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">@natachaa___x</a></td>
+                  <td class="num">383</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.83%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">@zmprw.psps</a></td>
+                  <td class="num">378</td>
+                  <td class="num">18</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.76%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">@babyjesse.ducky</a></td>
+                  <td class="num">326</td>
+                  <td class="num">14</td>
+                  <td>8</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">7.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/porlykm" target="_blank" rel="noopener noreferrer">@porlykm</a></td>
+                  <td class="num">300</td>
+                  <td class="num">6</td>
+                  <td>2</td>
+                  <td>17</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">8.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">@madmeecyn</a></td>
+                  <td class="num">286</td>
+                  <td class="num">3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">1.05%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">@weerachai_sinchai</a></td>
+                  <td class="num">283</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.83%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">@jamjampp</a></td>
+                  <td class="num">270</td>
+                  <td class="num">5</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.22%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">@c.hompink</a></td>
+                  <td class="num">249</td>
+                  <td class="num">3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">@eellyyrose</a></td>
+                  <td class="num">219</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.48%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/mamameanreview" target="_blank" rel="noopener noreferrer">@mamameanreview</a></td>
+                  <td class="num">185</td>
+                  <td class="num">6</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">9.19%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">@f.fahhhc</a></td>
+                  <td class="num">183</td>
+                  <td class="num">6</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.28%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">@dedeehappy</a></td>
+                  <td class="num">176</td>
+                  <td class="num">27</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">16.48%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">@sommickez</a></td>
+                  <td class="num">136</td>
+                  <td class="num">11</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">11.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">@guitargero_</a></td>
+                  <td class="num">134</td>
+                  <td class="num">1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.75%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">@nanseingleinkham</a></td>
+                  <td class="num">120</td>
+                  <td class="num">1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.83%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<footer>Prepared for <strong>ZUS Coffee</strong> · Instagram KOL Campaign Report</footer>
+</body>
+</html>
