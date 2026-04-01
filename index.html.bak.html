@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZUS Coffee</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --zus-blue: #2F3F8F; --zus-blue-soft: #4D5FB5; --zus-blue-pale: #E8ECFF; --bg: #F6F8FF;
@@ -28,13 +28,24 @@
   .section-title { font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 700; margin-bottom: 20px; color: var(--deep); }
   .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
   .overview-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .overview-grid-3 { grid-template-columns: repeat(3, 1fr); }
   .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; box-shadow: var(--shadow); }
-  .stat-num { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }
+  .stat-card-total {
+    background: linear-gradient(135deg, #F2F5FF 0%, #FFFFFF 100%);
+    border: 2px solid #6F83E8;
+    box-shadow: 0 10px 30px rgba(47, 63, 143, 0.2);
+    transform: translateY(-2px);
+  }
+  .stat-num { font-family: 'Prompt', sans-serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }
   .stat-label { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
   .stat-sublabel { font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
   .stat-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }
   .badge-post { background: var(--post-light); color: var(--post); }
   .badge-reel { background: var(--reel-light); color: var(--reel); }
+  .mobile-tooltip-triggers { display: none; margin-top: 10px; gap: 8px; flex-wrap: wrap; }
+  .mobile-tooltip-btn { border: 1px solid #B8C4F8; background: #fff; color: var(--zus-blue); border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .mobile-tooltip { display: none; margin-top: 8px; background: #fff; border: 1px solid #D6DFFF; border-radius: 10px; padding: 10px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
+  .mobile-tooltip.show { display: block; }
   .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .compare-card { border-radius: 14px; padding: 24px; border: 1.5px solid; background: white; }
   .compare-card.posts { border-color: rgba(46,62,142,0.36); }
@@ -53,15 +64,18 @@
   .top3-item { display: flex; align-items: center; gap: 10px; background: white; border-radius: 8px; padding: 9px 12px; border: 1px solid var(--border); }
   .rank-badge { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
   .rank-1 { background: #FFD700; color: #5A3800; } .rank-2 { background: #C0C0C0; color: #333; } .rank-3 { background: #CD7F32; color: #fff; }
-  .top3-username { font-weight: 600; font-size: 13px; flex: 1; } .top3-val { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px; }
+  .top3-username { font-weight: 600; font-size: 13px; flex: 1; } .top3-val { font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 15px; }
   .table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); background: white; margin-bottom: 24px; }
   table { width: 100%; border-collapse: collapse; background: white; }
   thead tr { background: var(--zus-blue); color: rgba(255,255,255,0.92); }
   th { padding: 11px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center; white-space: nowrap; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { background: var(--zus-blue-soft); }
+  th.sortable.active { background: #24357E; }
   th:first-child, td:first-child { text-align: left; padding-left: 16px; }
   tbody tr { border-bottom: 1px solid rgba(47,63,143,0.1); }
   td { padding: 10px 10px; font-size: 12.5px; text-align: center; color: var(--ink-muted); }
-  td.num { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--deep); }
+  td.num { font-family: 'Prompt', sans-serif; font-weight: 700; color: var(--deep); }
   td.er { font-weight: 700; color: var(--deep); }
   td a { color: var(--zus-blue); text-decoration: none; font-weight: 600; }
   td a:hover { text-decoration: underline; }
@@ -69,12 +83,18 @@
   .tag-outstanding { background: #EEF2FF; color: #1F2B66; } .tag-above { background: #DFE6FF; color: #22307A; } .tag-average { background: #F0F2FF; color: #4D5FB5; }
   .tag-below { background: #FFF0E8; color: #A24E1E; } .tag-under { background: #FCE4E4; color: #8B1010; } .tag-highly { background: #E5EAFF; color: #25358B; }
   .tag-engaging { background: #EAF0FF; color: #2A3E9D; } .tag-moderate { background: #F0F2FF; color: #4D5FB5; } .tag-low { background: #FFF0E8; color: #A24E1E; } .tag-minimal { background: #FCE4E4; color: #8B1010; }
+  .badge-total { background: var(--zus-blue-pale); color: var(--zus-blue); }
   .appendix-note { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }
   footer { background: var(--zus-blue); color: rgba(255,255,255,0.6); text-align: center; padding: 20px; font-size: 11px; }
   @media (max-width: 800px) {
     .report-header { padding: 32px 20px; }
     .container { padding: 24px 12px; }
-    .overview-grid, .overview-grid-2, .compare-grid, .highlights-grid { grid-template-columns: 1fr; }
+    .overview-grid, .overview-grid-2, .overview-grid-3, .compare-grid, .highlights-grid { grid-template-columns: 1fr; }
+    .overview-grid .stat-card-post,
+    .overview-grid .stat-card-reel,
+    .overview-grid-3 .stat-card-post,
+    .overview-grid-3 .stat-card-reel { display: none; }
+    .mobile-tooltip-triggers { display: flex; }
   }
 </style>
 </head>
@@ -95,13 +115,14 @@
   <div class="section">
     <div class="section-title">Campaign Overview</div>
     <div class="overview-grid">
-      <div class="stat-card"><div class="stat-badge badge-post">📷 Posts</div><div class="stat-num">103,665</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across 80 KOL rows with Post data</div></div>
-      <div class="stat-card"><div class="stat-badge badge-reel">🎬 Reels</div><div class="stat-num">377,597</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 90 KOL rows with Reels data</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--zus-blue)">481,262</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels</div></div>
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Posts</div><div class="stat-num">103,665</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across 80 KOL rows with Post data</div></div>
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reels</div><div class="stat-num">377,597</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 90 KOL rows with Reels data</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">481,262</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip">Reel Stats</button></div><div id="post-tooltip" class="mobile-tooltip"><strong>Posts</strong><br>Views: 103,665<br>Engagement: 6,051</div><div id="reel-tooltip" class="mobile-tooltip"><strong>Reels</strong><br>Views: 377,597<br>Engagement: 17,526</div></div>
     </div>
-    <div class="overview-grid overview-grid-2">
-      <div class="stat-card"><div class="stat-badge badge-post">📷 Post Engagement</div><div class="stat-num">6,051</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 5,720 · Comments 226 · Shares 53 · Saves 52</div></div>
-      <div class="stat-card"><div class="stat-badge badge-reel">🎬 Reel Engagement</div><div class="stat-num">17,526</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 14,552 · Comments 1,521 · Shares 1,214 · Saves 239</div></div>
+    <div class="overview-grid overview-grid-3">
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Post Engagement</div><div class="stat-num">6,051</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 5,720 · Comments 226 · Shares 53 · Saves 52</div></div>
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reel Engagement</div><div class="stat-num">17,526</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 14,552 · Comments 1,521 · Shares 1,214 · Saves 239</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">23,577</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel Engagement</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-engagement-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-engagement-tooltip">Reel Stats</button></div><div id="post-engagement-tooltip" class="mobile-tooltip"><strong>Post Engagement</strong><br>Total: 6,051<br>Likes: 5,720 · Comments: 226<br>Shares: 53 · Saves: 52</div><div id="reel-engagement-tooltip" class="mobile-tooltip"><strong>Reel Engagement</strong><br>Total: 17,526<br>Likes: 14,552 · Comments: 1,521<br>Shares: 1,214 · Saves: 239</div></div>
     </div>
   </div>
 
@@ -2497,5 +2518,70 @@
   </div>
 </div>
 <footer>Prepared for <strong>ZUS Coffee</strong> · Instagram KOL Campaign Report</footer>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('a[href*="instagram.com"]').forEach(function (link) {
+      link.textContent = link.textContent.trim().replace(/^@+/, '');
+    });
+
+    var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
+    var tables = document.querySelectorAll('.table-wrapper table');
+
+    tables.forEach(function (table) {
+      var headerCells = Array.from(table.querySelectorAll('thead th'));
+      var tbody = table.querySelector('tbody');
+      if (!tbody) return;
+
+      headerCells.forEach(function (th, index) {
+        var baseLabel = th.textContent.trim();
+        if (!sortableColumns.includes(baseLabel)) return;
+
+        th.classList.add('sortable');
+        th.dataset.order = 'desc';
+        th.dataset.baseLabel = baseLabel;
+        th.textContent = baseLabel + ' ↕';
+
+        th.addEventListener('click', function () {
+          var nextOrder = th.dataset.order === 'asc' ? 'desc' : 'asc';
+          var rows = Array.from(tbody.querySelectorAll('tr'));
+
+          rows.sort(function (rowA, rowB) {
+            var a = rowA.cells[index].textContent.trim().replace(/,/g, '').replace('%', '');
+            var b = rowB.cells[index].textContent.trim().replace(/,/g, '').replace('%', '');
+            var aNum = Number(a);
+            var bNum = Number(b);
+            return nextOrder === 'asc' ? aNum - bNum : bNum - aNum;
+          });
+
+          rows.forEach(function (row) {
+            tbody.appendChild(row);
+          });
+
+          headerCells.forEach(function (cell) {
+            if (!cell.classList.contains('sortable')) return;
+            cell.classList.remove('active');
+            cell.textContent = cell.dataset.baseLabel + ' ↕';
+            cell.dataset.order = 'desc';
+          });
+
+          th.classList.add('active');
+          th.dataset.order = nextOrder;
+          th.textContent = th.dataset.baseLabel + (nextOrder === 'asc' ? ' ↑' : ' ↓');
+        });
+      });
+    });
+
+    document.querySelectorAll('.mobile-tooltip-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.dataset.tooltipTarget;
+        document.querySelectorAll('.mobile-tooltip').forEach(function (tip) {
+          if (tip.id !== targetId) tip.classList.remove('show');
+        });
+        var target = document.getElementById(targetId);
+        if (target) target.classList.toggle('show');
+      });
+    });
+  });
+</script>
 </body>
 </html>

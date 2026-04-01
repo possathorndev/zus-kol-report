@@ -10,6 +10,7 @@
     --zus-blue: #2F3F8F; --zus-blue-soft: #4D5FB5; --zus-blue-pale: #E8ECFF; --bg: #F6F8FF;
     --ink: #111C44; --ink-muted: #3D497E; --ink-soft: #6471A6; --deep: #1F2B66;
     --reel: #3752C8; --reel-light: #E8EDFF; --post: #2E3E8E; --post-light: #E3E9FF;
+    --tiktok: #111111; --tiktok-light: #F1F1F1;
     --border: rgba(47,63,143,0.22); --shadow: 0 4px 28px rgba(31,43,102,0.12);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,8 +27,8 @@
   .container { max-width: 1100px; margin: 0 auto; padding: 42px 30px; }
   .section { margin-bottom: 48px; }
   .section-title { font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 700; margin-bottom: 20px; color: var(--deep); }
-  .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-  .overview-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .overview-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+  .overview-grid-2 { grid-template-columns: 1fr; }
   .overview-grid-3 { grid-template-columns: repeat(3, 1fr); }
   .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; box-shadow: var(--shadow); }
   .stat-card-total {
@@ -42,21 +43,24 @@
   .stat-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }
   .badge-post { background: var(--post-light); color: var(--post); }
   .badge-reel { background: var(--reel-light); color: var(--reel); }
+  .badge-tiktok { background: var(--tiktok-light); color: var(--tiktok); }
+  .badge-total { background: var(--zus-blue-pale); color: var(--zus-blue); }
   .mobile-tooltip-triggers { display: none; margin-top: 10px; gap: 8px; flex-wrap: wrap; }
   .mobile-tooltip-btn { border: 1px solid #B8C4F8; background: #fff; color: var(--zus-blue); border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
   .mobile-tooltip { display: none; margin-top: 8px; background: #fff; border: 1px solid #D6DFFF; border-radius: 10px; padding: 10px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
   .mobile-tooltip.show { display: block; }
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .compare-card { border-radius: 14px; padding: 24px; border: 1.5px solid; background: white; }
   .compare-card.posts { border-color: rgba(46,62,142,0.36); }
   .compare-card.reels { border-color: rgba(55,82,200,0.36); }
+  .compare-card.tiktok { border-color: rgba(17,17,17,0.24); }
   .compare-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }
   .compare-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
   .compare-row:last-child { border: none; }
   .compare-row-label { color: var(--ink-muted); font-weight: 500; }
   .compare-row-val { font-weight: 700; color: var(--deep); font-size: 14px; }
   .verdict { margin-top: 20px; padding: 16px 18px; background: var(--zus-blue-pale); border-left: 4px solid var(--zus-blue); border-radius: 10px; font-size: 13px; color: var(--deep); }
-  .highlights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .highlights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
   .highlight-section-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
   .top3-group { margin-bottom: 16px; }
   .top3-label { font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
@@ -83,17 +87,39 @@
   .tag-outstanding { background: #EEF2FF; color: #1F2B66; } .tag-above { background: #DFE6FF; color: #22307A; } .tag-average { background: #F0F2FF; color: #4D5FB5; }
   .tag-below { background: #FFF0E8; color: #A24E1E; } .tag-under { background: #FCE4E4; color: #8B1010; } .tag-highly { background: #E5EAFF; color: #25358B; }
   .tag-engaging { background: #EAF0FF; color: #2A3E9D; } .tag-moderate { background: #F0F2FF; color: #4D5FB5; } .tag-low { background: #FFF0E8; color: #A24E1E; } .tag-minimal { background: #FCE4E4; color: #8B1010; }
-  .badge-total { background: var(--zus-blue-pale); color: var(--zus-blue); }
   .appendix-note { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }
+  .table-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .table-tab-btn { border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+  .table-tab-btn:hover { border-color: var(--zus-blue-soft); color: var(--deep); }
+  .table-tab-btn.active { color: white; border-color: transparent; box-shadow: var(--shadow); }
+  .table-tab-btn:focus,
+  .table-tab-btn:focus-visible { color: white; outline: none; }
+  .table-tab-btn[data-tab-target="post-table"] { background: #F4F6FF; border-color: #C9D3FF; }
+  .table-tab-btn[data-tab-target="reel-table"] { background: #EEF2FF; border-color: #C4D0FF; }
+  .table-tab-btn[data-tab-target="tiktok-table"] { background: #F5F5F5; border-color: #D6D6D6; }
+  .table-tab-btn.active[data-tab-target="post-table"] { background: var(--post); }
+  .table-tab-btn.active[data-tab-target="reel-table"] { background: var(--reel); }
+  .table-tab-btn.active[data-tab-target="tiktok-table"] { background: var(--tiktok); }
+  .table-panel { display: none; }
+  .table-panel.active { display: block; }
   footer { background: var(--zus-blue); color: rgba(255,255,255,0.6); text-align: center; padding: 20px; font-size: 11px; }
+  @media (min-width: 768px) {
+    .overview-grid { grid-template-columns: repeat(4, 1fr); }
+    .overview-grid-2 { grid-template-columns: repeat(4, 1fr); }
+  }
   @media (max-width: 800px) {
     .report-header { padding: 32px 20px; }
     .container { padding: 24px 12px; }
     .overview-grid, .overview-grid-2, .overview-grid-3, .compare-grid, .highlights-grid { grid-template-columns: 1fr; }
     .overview-grid .stat-card-post,
     .overview-grid .stat-card-reel,
+    .overview-grid .stat-card-tiktok,
     .overview-grid-3 .stat-card-post,
-    .overview-grid-3 .stat-card-reel { display: none; }
+    .overview-grid-3 .stat-card-reel,
+    .overview-grid-3 .stat-card-tiktok,
+    .overview-grid-2 .stat-card-post,
+    .overview-grid-2 .stat-card-reel,
+    .overview-grid-2 .stat-card-tiktok { display: none; }
     .mobile-tooltip-triggers { display: flex; }
   }
 </style>
@@ -109,20 +135,23 @@
     <div class="meta-item"><span class="meta-label">KOL Rows</span><span class="meta-value">91</span></div>
     <div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">80</span></div>
     <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">90</span></div>
+    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">38</span></div>
   </div>
 </div>
 <div class="container">
   <div class="section">
     <div class="section-title">Campaign Overview</div>
-    <div class="overview-grid">
+    <div class="overview-grid overview-grid-2">
       <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Posts</div><div class="stat-num">103,665</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across 80 KOL rows with Post data</div></div>
       <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reels</div><div class="stat-num">377,597</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 90 KOL rows with Reels data</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">481,262</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip">Reel Stats</button></div><div id="post-tooltip" class="mobile-tooltip"><strong>Posts</strong><br>Views: 103,665<br>Engagement: 6,051</div><div id="reel-tooltip" class="mobile-tooltip"><strong>Reels</strong><br>Views: 377,597<br>Engagement: 17,526</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">🎵 TikTok</div><div class="stat-num">436,806</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across 38 KOL rows with TikTok data</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">918,068</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip">TikTok Stats</button></div><div id="post-tooltip" class="mobile-tooltip"><strong>Posts</strong><br>Views: 103,665<br>Engagement: 6,051</div><div id="reel-tooltip" class="mobile-tooltip"><strong>Reels</strong><br>Views: 377,597<br>Engagement: 17,526</div><div id="tiktok-tooltip" class="mobile-tooltip"><strong>TikTok</strong><br>Views: 436,806<br>Engagement: 18,352</div></div>
     </div>
-    <div class="overview-grid overview-grid-3">
+    <div class="overview-grid overview-grid-2">
       <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Post Engagement</div><div class="stat-num">6,051</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 5,720 · Comments 226 · Shares 53 · Saves 52</div></div>
       <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reel Engagement</div><div class="stat-num">17,526</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 14,552 · Comments 1,521 · Shares 1,214 · Saves 239</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">23,577</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel Engagement</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-engagement-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-engagement-tooltip">Reel Stats</button></div><div id="post-engagement-tooltip" class="mobile-tooltip"><strong>Post Engagement</strong><br>Total: 6,051<br>Likes: 5,720 · Comments: 226<br>Shares: 53 · Saves: 52</div><div id="reel-engagement-tooltip" class="mobile-tooltip"><strong>Reel Engagement</strong><br>Total: 17,526<br>Likes: 14,552 · Comments: 1,521<br>Shares: 1,214 · Saves: 239</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">🎵 TikTok Engagement</div><div class="stat-num">18,352</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes 15,844 · Comments 225 · Shares 1,560 · Saves 723</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">41,929</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel + TikTok Engagement</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-engagement-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-engagement-tooltip">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-engagement-tooltip">TikTok Stats</button></div><div id="post-engagement-tooltip" class="mobile-tooltip"><strong>Post Engagement</strong><br>Total: 6,051<br>Likes: 5,720 · Comments: 226<br>Shares: 53 · Saves: 52</div><div id="reel-engagement-tooltip" class="mobile-tooltip"><strong>Reel Engagement</strong><br>Total: 17,526<br>Likes: 14,552 · Comments: 1,521<br>Shares: 1,214 · Saves: 239</div><div id="tiktok-engagement-tooltip" class="mobile-tooltip"><strong>TikTok Engagement</strong><br>Total: 18,352<br>Likes: 15,844 · Comments: 225<br>Shares: 1,560 · Saves: 723</div></div>
     </div>
   </div>
 
@@ -151,6 +180,17 @@
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">4,196</span></div>
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">3.93%</span></div>
       </div>
+      <div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)">🎵 TikTok</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">436,806</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">15,844</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">225</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">1,560</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">0</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">723</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">11,495</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">7.40%</span></div>
+      </div>
     </div>
     <div class="verdict"><strong>Key Takeaway:</strong> Reels led reach by <strong>273,932 views</strong> (264.25% difference), while Posts delivered stronger proportional engagement per view on average.</div>
   </div>
@@ -163,57 +203,57 @@
         <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">__pawiixy</a></div>
                   <div class="top3-val">7,731</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">perth_pitchapa</a></div>
                   <div class="top3-val">5,057</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></div>
                   <div class="top3-val">4,089</div>
                 </div>
                 </div></div>
         <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">aiiyadiary</a></div>
                   <div class="top3-val">31</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">pinky_pinkywinky</a></div>
                   <div class="top3-val">18</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">gowithlove_review</a></div>
                   <div class="top3-val">17</div>
                 </div>
                 </div></div>
         <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">perth_pitchapa</a></div>
                   <div class="top3-val">8</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">saintstst</a></div>
                   <div class="top3-val">7</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">ccattpns</a></div>
                   <div class="top3-val">5</div>
                 </div>
                 </div></div>
@@ -223,58 +263,118 @@
         <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">@nutthanon_nat</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">nutthanon_nat</a></div>
                   <div class="top3-val">162,599</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">@rainbowenergybar</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">rainbowenergybar</a></div>
                   <div class="top3-val">88,606</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">sirindahlia</a></div>
                   <div class="top3-val">16,052</div>
                 </div>
                 </div></div>
         <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">@nutthanon_nat</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">nutthanon_nat</a></div>
                   <div class="top3-val">1,277</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">bank_apirak_</a></div>
                   <div class="top3-val">42</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">aiiyadiary</a></div>
                   <div class="top3-val">22</div>
                 </div>
                 </div></div>
         <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">
                 <div class="top3-item">
                   <div class="rank-badge rank-1">1</div>
-                  <div class="top3-username"><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">@rainbowenergybar</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">rainbowenergybar</a></div>
                   <div class="top3-val">166</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-2">2</div>
-                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">@nutthanon_nat</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">nutthanon_nat</a></div>
                   <div class="top3-val">33</div>
                 </div>
                 
                 <div class="top3-item">
                   <div class="rank-badge rank-3">3</div>
-                  <div class="top3-username"><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></div>
+                  <div class="top3-username"><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">wilaibhorn_kh</a></div>
                   <div class="top3-val">11</div>
+                </div>
+                </div></div>
+      </div>
+      <div>
+        <div class="highlight-section-title" style="color:var(--tiktok)">🎵 TikTok</div>
+        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username">nutthanon_nat</div>
+                  <div class="top3-val">416,600</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username">bank_apirak_</div>
+                  <div class="top3-val">2,564</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username">gowithlove_review</div>
+                  <div class="top3-val">1,848</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username">nutthanon_nat</div>
+                  <div class="top3-val">128</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username">wilaibhorn_kh</div>
+                  <div class="top3-val">17</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username">gowithlove_review</div>
+                  <div class="top3-val">11</div>
+                </div>
+                </div></div>
+        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">
+                <div class="top3-item">
+                  <div class="rank-badge rank-1">1</div>
+                  <div class="top3-username">nutthanon_nat</div>
+                  <div class="top3-val">642</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-2">2</div>
+                  <div class="top3-username">wilaibhorn_kh</div>
+                  <div class="top3-val">14</div>
+                </div>
+                
+                <div class="top3-item">
+                  <div class="rank-badge rank-3">3</div>
+                  <div class="top3-username">gowithlove_review</div>
+                  <div class="top3-val">8</div>
                 </div>
                 </div></div>
       </div>
@@ -289,15 +389,24 @@
       ER Mean 7.22%, SD 9.60%<br><br>
       <strong>Reels Benchmarks:</strong><br>
       Views Mean 4,196, SD 19,218<br>
-      ER Mean 3.93%, SD 2.98%
+      ER Mean 3.93%, SD 2.98%<br><br>
+      <strong>TikTok Benchmarks:</strong><br>
+      Views Mean 11,495, SD 66,601<br>
+      ER Mean 7.40%, SD 4.56%
     </div>
-    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--post)">📷 Posts Performance Table</div>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-        <tbody>
+    <div class="table-tabs">
+      <button type="button" class="table-tab-btn active" data-tab-target="post-table">📷 Posts</button>
+      <button type="button" class="table-tab-btn" data-tab-target="reel-table">🎬 Reels</button>
+      <button type="button" class="table-tab-btn" data-tab-target="tiktok-table">🎵 TikTok</button>
+    </div>
+    <div id="post-table" class="table-panel active">
+      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--post)">📷 Posts Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
                 <tr>
-                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></td>
+                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">__pawiixy</a></td>
                   <td class="num">7,731</td>
                   <td class="num">107</td>
                   <td>0</td>
@@ -310,7 +419,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></td>
+                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">perth_pitchapa</a></td>
                   <td class="num">5,057</td>
                   <td class="num">246</td>
                   <td>7</td>
@@ -323,7 +432,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
                   <td class="num">4,089</td>
                   <td class="num">86</td>
                   <td>0</td>
@@ -336,7 +445,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></td>
+                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">saintstst</a></td>
                   <td class="num">4,057</td>
                   <td class="num">208</td>
                   <td>2</td>
@@ -349,7 +458,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">@ffamee_10</a></td>
+                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">ffamee_10</a></td>
                   <td class="num">3,571</td>
                   <td class="num">76</td>
                   <td>0</td>
@@ -362,7 +471,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">@bestktsz</a></td>
+                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">bestktsz</a></td>
                   <td class="num">3,029</td>
                   <td class="num">87</td>
                   <td>2</td>
@@ -375,7 +484,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">@jjinatcha</a></td>
+                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">jjinatcha</a></td>
                   <td class="num">2,955</td>
                   <td class="num">867</td>
                   <td>4</td>
@@ -388,7 +497,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
                   <td class="num">2,789</td>
                   <td class="num">50</td>
                   <td>2</td>
@@ -401,7 +510,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">@rinya.pmt</a></td>
+                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">rinya.pmt</a></td>
                   <td class="num">2,429</td>
                   <td class="num">112</td>
                   <td>0</td>
@@ -414,7 +523,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">@fanlytwin_s</a></td>
+                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">fanlytwin_s</a></td>
                   <td class="num">2,405</td>
                   <td class="num">165</td>
                   <td>2</td>
@@ -427,7 +536,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">@benjamin.akt</a></td>
+                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">benjamin.akt</a></td>
                   <td class="num">2,318</td>
                   <td class="num">85</td>
                   <td>4</td>
@@ -440,7 +549,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">@haendibae</a></td>
+                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">haendibae</a></td>
                   <td class="num">2,186</td>
                   <td class="num">62</td>
                   <td>0</td>
@@ -453,7 +562,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">@mayujangg</a></td>
+                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">mayujangg</a></td>
                   <td class="num">2,078</td>
                   <td class="num">70</td>
                   <td>1</td>
@@ -466,7 +575,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">@sutharinee._</a></td>
+                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">sutharinee._</a></td>
                   <td class="num">1,976</td>
                   <td class="num">98</td>
                   <td>1</td>
@@ -479,7 +588,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">@teara_faa</a></td>
+                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">teara_faa</a></td>
                   <td class="num">1,943</td>
                   <td class="num">76</td>
                   <td>1</td>
@@ -492,7 +601,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">@ssarochaa_</a></td>
+                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">ssarochaa_</a></td>
                   <td class="num">1,894</td>
                   <td class="num">96</td>
                   <td>4</td>
@@ -505,7 +614,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">@sasi.care</a></td>
+                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">sasi.care</a></td>
                   <td class="num">1,883</td>
                   <td class="num">159</td>
                   <td>2</td>
@@ -518,7 +627,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">@puynoon.22</a></td>
+                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">puynoon.22</a></td>
                   <td class="num">1,822</td>
                   <td class="num">96</td>
                   <td>0</td>
@@ -531,7 +640,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">@paevass</a></td>
+                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">paevass</a></td>
                   <td class="num">1,792</td>
                   <td class="num">72</td>
                   <td>0</td>
@@ -544,7 +653,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">@aaeeyyy</a></td>
+                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">aaeeyyy</a></td>
                   <td class="num">1,732</td>
                   <td class="num">140</td>
                   <td>8</td>
@@ -557,7 +666,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">@biwbewbill.biw</a></td>
+                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">biwbewbill.biw</a></td>
                   <td class="num">1,644</td>
                   <td class="num">60</td>
                   <td>3</td>
@@ -570,7 +679,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">@milkjarin</a></td>
+                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">milkjarin</a></td>
                   <td class="num">1,606</td>
                   <td class="num">105</td>
                   <td>1</td>
@@ -583,7 +692,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">@saiparncm</a></td>
+                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">saiparncm</a></td>
                   <td class="num">1,492</td>
                   <td class="num">63</td>
                   <td>0</td>
@@ -596,7 +705,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">@rubybelles_</a></td>
+                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">rubybelles_</a></td>
                   <td class="num">1,461</td>
                   <td class="num">42</td>
                   <td>1</td>
@@ -609,7 +718,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></td>
+                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">sirindahlia</a></td>
                   <td class="num">1,358</td>
                   <td class="num">22</td>
                   <td>0</td>
@@ -622,7 +731,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">@naritta_ndi</a></td>
+                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">naritta_ndi</a></td>
                   <td class="num">1,325</td>
                   <td class="num">34</td>
                   <td>2</td>
@@ -635,7 +744,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">@yanipans</a></td>
+                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">yanipans</a></td>
                   <td class="num">1,269</td>
                   <td class="num">109</td>
                   <td>10</td>
@@ -648,7 +757,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">@litaltp</a></td>
+                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">litaltp</a></td>
                   <td class="num">1,256</td>
                   <td class="num">56</td>
                   <td>4</td>
@@ -661,7 +770,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">@da_chadon</a></td>
+                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">da_chadon</a></td>
                   <td class="num">1,244</td>
                   <td class="num">53</td>
                   <td>0</td>
@@ -674,7 +783,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">@ingynesss</a></td>
+                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">ingynesss</a></td>
                   <td class="num">1,243</td>
                   <td class="num">67</td>
                   <td>0</td>
@@ -687,7 +796,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">@thisisnan.nan</a></td>
+                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">thisisnan.nan</a></td>
                   <td class="num">1,194</td>
                   <td class="num">85</td>
                   <td>14</td>
@@ -700,7 +809,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">@peacheryas</a></td>
+                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">peacheryas</a></td>
                   <td class="num">1,145</td>
                   <td class="num">57</td>
                   <td>11</td>
@@ -713,7 +822,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">@aramugfront</a></td>
+                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">aramugfront</a></td>
                   <td class="num">1,119</td>
                   <td class="num">2</td>
                   <td>0</td>
@@ -726,7 +835,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></td>
+                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">ccattpns</a></td>
                   <td class="num">1,018</td>
                   <td class="num">21</td>
                   <td>3</td>
@@ -739,7 +848,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">@puntarita.k</a></td>
+                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">puntarita.k</a></td>
                   <td class="num">1,013</td>
                   <td class="num">74</td>
                   <td>4</td>
@@ -752,7 +861,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">@melonmo</a></td>
+                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">melonmo</a></td>
                   <td class="num">947</td>
                   <td class="num">40</td>
                   <td>4</td>
@@ -765,7 +874,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">@famsrwpp</a></td>
+                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">famsrwpp</a></td>
                   <td class="num">941</td>
                   <td class="num">30</td>
                   <td>0</td>
@@ -778,7 +887,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">@_pewbo</a></td>
+                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">_pewbo</a></td>
                   <td class="num">928</td>
                   <td class="num">39</td>
                   <td>2</td>
@@ -791,7 +900,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></td>
+                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">bank_apirak_</a></td>
                   <td class="num">910</td>
                   <td class="num">32</td>
                   <td>1</td>
@@ -804,7 +913,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">@sahutsaya</a></td>
+                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">sahutsaya</a></td>
                   <td class="num">901</td>
                   <td class="num">76</td>
                   <td>0</td>
@@ -817,7 +926,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">@miteen.pn_</a></td>
+                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">miteen.pn_</a></td>
                   <td class="num">854</td>
                   <td class="num">26</td>
                   <td>0</td>
@@ -830,7 +939,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">@melairvoyante</a></td>
+                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">melairvoyante</a></td>
                   <td class="num">844</td>
                   <td class="num">41</td>
                   <td>0</td>
@@ -843,7 +952,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">@mycookie.house_</a></td>
+                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">mycookie.house_</a></td>
                   <td class="num">823</td>
                   <td class="num">21</td>
                   <td>0</td>
@@ -856,7 +965,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">@pyanisa</a></td>
+                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">pyanisa</a></td>
                   <td class="num">821</td>
                   <td class="num">42</td>
                   <td>4</td>
@@ -869,7 +978,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">@dianadanai_</a></td>
+                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">dianadanai_</a></td>
                   <td class="num">816</td>
                   <td class="num">56</td>
                   <td>0</td>
@@ -882,7 +991,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">@giftster__</a></td>
+                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">giftster__</a></td>
                   <td class="num">816</td>
                   <td class="num">22</td>
                   <td>4</td>
@@ -895,7 +1004,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">@minddyspm</a></td>
+                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">minddyspm</a></td>
                   <td class="num">754</td>
                   <td class="num">41</td>
                   <td>0</td>
@@ -908,7 +1017,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">@grace.isgrace</a></td>
+                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">grace.isgrace</a></td>
                   <td class="num">749</td>
                   <td class="num">40</td>
                   <td>2</td>
@@ -921,7 +1030,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">@ptp.ev</a></td>
+                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">ptp.ev</a></td>
                   <td class="num">733</td>
                   <td class="num">48</td>
                   <td>6</td>
@@ -934,7 +1043,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></td>
+                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">pinky_pinkywinky</a></td>
                   <td class="num">711</td>
                   <td class="num">89</td>
                   <td>18</td>
@@ -947,7 +1056,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">@namsomort_</a></td>
+                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">namsomort_</a></td>
                   <td class="num">701</td>
                   <td class="num">26</td>
                   <td>0</td>
@@ -960,7 +1069,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">@prombin</a></td>
+                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">prombin</a></td>
                   <td class="num">688</td>
                   <td class="num">42</td>
                   <td>0</td>
@@ -973,7 +1082,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">@nanseingleinkham</a></td>
+                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">nanseingleinkham</a></td>
                   <td class="num">682</td>
                   <td class="num">35</td>
                   <td>1</td>
@@ -986,7 +1095,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">@arpowang</a></td>
+                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">arpowang</a></td>
                   <td class="num">678</td>
                   <td class="num">20</td>
                   <td>1</td>
@@ -999,7 +1108,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></td>
+                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">aiiyadiary</a></td>
                   <td class="num">660</td>
                   <td class="num">162</td>
                   <td>31</td>
@@ -1012,7 +1121,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">@grace.phapada</a></td>
+                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">grace.phapada</a></td>
                   <td class="num">640</td>
                   <td class="num">54</td>
                   <td>8</td>
@@ -1025,7 +1134,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">@natachaa___x</a></td>
+                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">natachaa___x</a></td>
                   <td class="num">632</td>
                   <td class="num">41</td>
                   <td>0</td>
@@ -1038,7 +1147,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">@nannykkjk</a></td>
+                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">nannykkjk</a></td>
                   <td class="num">626</td>
                   <td class="num">325</td>
                   <td>6</td>
@@ -1051,7 +1160,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></td>
+                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">gowithlove_review</a></td>
                   <td class="num">622</td>
                   <td class="num">30</td>
                   <td>17</td>
@@ -1064,7 +1173,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">@best.lingnoii</a></td>
+                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">best.lingnoii</a></td>
                   <td class="num">604</td>
                   <td class="num">66</td>
                   <td>0</td>
@@ -1077,7 +1186,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">@kunyingkunya</a></td>
+                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">kunyingkunya</a></td>
                   <td class="num">601</td>
                   <td class="num">33</td>
                   <td>3</td>
@@ -1090,7 +1199,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">@sommickez</a></td>
+                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">sommickez</a></td>
                   <td class="num">594</td>
                   <td class="num">41</td>
                   <td>8</td>
@@ -1103,7 +1212,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">@milkiesz</a></td>
+                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">milkiesz</a></td>
                   <td class="num">588</td>
                   <td class="num">18</td>
                   <td>4</td>
@@ -1116,7 +1225,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">@vousbeemvoyez</a></td>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
                   <td class="num">526</td>
                   <td class="num">11</td>
                   <td>1</td>
@@ -1129,7 +1238,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">@bunnysp.pp</a></td>
+                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">bunnysp.pp</a></td>
                   <td class="num">494</td>
                   <td class="num">39</td>
                   <td>2</td>
@@ -1142,7 +1251,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">@f.fahhhc</a></td>
+                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">f.fahhhc</a></td>
                   <td class="num">468</td>
                   <td class="num">8</td>
                   <td>0</td>
@@ -1155,7 +1264,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">@jantip.kob</a></td>
+                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">jantip.kob</a></td>
                   <td class="num">468</td>
                   <td class="num">16</td>
                   <td>0</td>
@@ -1168,7 +1277,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rinirinstory" target="_blank" rel="noopener noreferrer">@rinirinstory</a></td>
+                  <td><a href="https://instagram.com/rinirinstory" target="_blank" rel="noopener noreferrer">rinirinstory</a></td>
                   <td class="num">462</td>
                   <td class="num">23</td>
                   <td>4</td>
@@ -1181,7 +1290,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">@dish.is.dietfood</a></td>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
                   <td class="num">411</td>
                   <td class="num">11</td>
                   <td>0</td>
@@ -1194,7 +1303,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">@madmeecyn</a></td>
+                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">madmeecyn</a></td>
                   <td class="num">383</td>
                   <td class="num">31</td>
                   <td>1</td>
@@ -1207,7 +1316,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">@zmprw.psps</a></td>
+                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">zmprw.psps</a></td>
                   <td class="num">383</td>
                   <td class="num">36</td>
                   <td>0</td>
@@ -1220,7 +1329,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">@babyjesse.ducky</a></td>
+                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">babyjesse.ducky</a></td>
                   <td class="num">374</td>
                   <td class="num">22</td>
                   <td>2</td>
@@ -1233,7 +1342,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">@dedeehappy</a></td>
+                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">dedeehappy</a></td>
                   <td class="num">352</td>
                   <td class="num">11</td>
                   <td>1</td>
@@ -1246,7 +1355,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">@eellyyrose</a></td>
+                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">eellyyrose</a></td>
                   <td class="num">341</td>
                   <td class="num">27</td>
                   <td>0</td>
@@ -1259,7 +1368,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">@jamjampp</a></td>
+                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">jamjampp</a></td>
                   <td class="num">235</td>
                   <td class="num">8</td>
                   <td>0</td>
@@ -1272,7 +1381,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">@c.hompink</a></td>
+                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">c.hompink</a></td>
                   <td class="num">229</td>
                   <td class="num">3</td>
                   <td>0</td>
@@ -1285,7 +1394,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">@weerachai_sinchai</a></td>
+                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">weerachai_sinchai</a></td>
                   <td class="num">160</td>
                   <td class="num">106</td>
                   <td>0</td>
@@ -1298,7 +1407,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">@aa_pornthip</a></td>
+                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">aa_pornthip</a></td>
                   <td class="num">158</td>
                   <td class="num">11</td>
                   <td>0</td>
@@ -1311,7 +1420,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">@guitargero_</a></td>
+                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">guitargero_</a></td>
                   <td class="num">150</td>
                   <td class="num">7</td>
                   <td>0</td>
@@ -1324,7 +1433,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></td>
+                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">wilaibhorn_kh</a></td>
                   <td class="num">84</td>
                   <td class="num">6</td>
                   <td>2</td>
@@ -1336,15 +1445,17 @@
                   <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
                 </tr>
                 </tbody>
-      </table>
+        </table>
+      </div>
     </div>
-    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--reel)">🎬 Reels Performance Table</div>
-    <div class="table-wrapper">
-      <table>
-        <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-        <tbody>
+    <div id="reel-table" class="table-panel">
+      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--reel)">🎬 Reels Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
                 <tr>
-                  <td><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">@nutthanon_nat</a></td>
+                  <td><a href="https://instagram.com/nutthanon_nat" target="_blank" rel="noopener noreferrer">nutthanon_nat</a></td>
                   <td class="num">162,599</td>
                   <td class="num">5,551</td>
                   <td>1,277</td>
@@ -1357,7 +1468,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">@rainbowenergybar</a></td>
+                  <td><a href="https://instagram.com/rainbowenergybar" target="_blank" rel="noopener noreferrer">rainbowenergybar</a></td>
                   <td class="num">88,606</td>
                   <td class="num">3,622</td>
                   <td>15</td>
@@ -1370,7 +1481,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">@sirindahlia</a></td>
+                  <td><a href="https://instagram.com/sirindahlia" target="_blank" rel="noopener noreferrer">sirindahlia</a></td>
                   <td class="num">16,052</td>
                   <td class="num">1,746</td>
                   <td>1</td>
@@ -1383,7 +1494,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">@jjinatcha</a></td>
+                  <td><a href="https://instagram.com/jjinatcha" target="_blank" rel="noopener noreferrer">jjinatcha</a></td>
                   <td class="num">6,689</td>
                   <td class="num">766</td>
                   <td>1</td>
@@ -1396,7 +1507,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">@bestktsz</a></td>
+                  <td><a href="https://instagram.com/bestktsz" target="_blank" rel="noopener noreferrer">bestktsz</a></td>
                   <td class="num">6,458</td>
                   <td class="num">39</td>
                   <td>2</td>
@@ -1409,7 +1520,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">@nannykkjk</a></td>
+                  <td><a href="https://instagram.com/nannykkjk" target="_blank" rel="noopener noreferrer">nannykkjk</a></td>
                   <td class="num">5,469</td>
                   <td class="num">224</td>
                   <td>7</td>
@@ -1422,7 +1533,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">@ccattpns</a></td>
+                  <td><a href="https://instagram.com/ccattpns" target="_blank" rel="noopener noreferrer">ccattpns</a></td>
                   <td class="num">3,798</td>
                   <td class="num">100</td>
                   <td>4</td>
@@ -1435,7 +1546,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">@__pawiixy</a></td>
+                  <td><a href="https://instagram.com/__pawiixy" target="_blank" rel="noopener noreferrer">__pawiixy</a></td>
                   <td class="num">3,728</td>
                   <td class="num">19</td>
                   <td>0</td>
@@ -1448,7 +1559,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">@ffamee_10</a></td>
+                  <td><a href="https://instagram.com/ffamee_10" target="_blank" rel="noopener noreferrer">ffamee_10</a></td>
                   <td class="num">3,495</td>
                   <td class="num">124</td>
                   <td>2</td>
@@ -1461,7 +1572,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">@ptp.ev</a></td>
+                  <td><a href="https://instagram.com/ptp.ev" target="_blank" rel="noopener noreferrer">ptp.ev</a></td>
                   <td class="num">2,793</td>
                   <td class="num">81</td>
                   <td>0</td>
@@ -1474,7 +1585,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">@puntarita.k</a></td>
+                  <td><a href="https://instagram.com/puntarita.k" target="_blank" rel="noopener noreferrer">puntarita.k</a></td>
                   <td class="num">2,783</td>
                   <td class="num">10</td>
                   <td>1</td>
@@ -1487,7 +1598,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">@naritta_ndi</a></td>
+                  <td><a href="https://instagram.com/naritta_ndi" target="_blank" rel="noopener noreferrer">naritta_ndi</a></td>
                   <td class="num">2,684</td>
                   <td class="num">14</td>
                   <td>1</td>
@@ -1500,7 +1611,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">@aramugfront</a></td>
+                  <td><a href="https://instagram.com/aramugfront" target="_blank" rel="noopener noreferrer">aramugfront</a></td>
                   <td class="num">2,445</td>
                   <td class="num">20</td>
                   <td>0</td>
@@ -1513,7 +1624,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">@giftster__</a></td>
+                  <td><a href="https://instagram.com/giftster__" target="_blank" rel="noopener noreferrer">giftster__</a></td>
                   <td class="num">2,315</td>
                   <td class="num">50</td>
                   <td>9</td>
@@ -1526,7 +1637,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">@rinya.pmt</a></td>
+                  <td><a href="https://instagram.com/rinya.pmt" target="_blank" rel="noopener noreferrer">rinya.pmt</a></td>
                   <td class="num">2,197</td>
                   <td class="num">132</td>
                   <td>0</td>
@@ -1539,7 +1650,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bbeembenja" target="_blank" rel="noopener noreferrer">@bbeembenja</a></td>
+                  <td><a href="https://instagram.com/bbeembenja" target="_blank" rel="noopener noreferrer">bbeembenja</a></td>
                   <td class="num">2,158</td>
                   <td class="num">45</td>
                   <td>0</td>
@@ -1552,7 +1663,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
                   <td class="num">2,078</td>
                   <td class="num">16</td>
                   <td>0</td>
@@ -1565,7 +1676,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ploira.o5" target="_blank" rel="noopener noreferrer">@ploira.o5</a></td>
+                  <td><a href="https://instagram.com/ploira.o5" target="_blank" rel="noopener noreferrer">ploira.o5</a></td>
                   <td class="num">2,068</td>
                   <td class="num">113</td>
                   <td>2</td>
@@ -1578,7 +1689,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">@perth_pitchapa</a></td>
+                  <td><a href="https://instagram.com/perth_pitchapa" target="_blank" rel="noopener noreferrer">perth_pitchapa</a></td>
                   <td class="num">2,060</td>
                   <td class="num">54</td>
                   <td>0</td>
@@ -1591,7 +1702,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">@famsrwpp</a></td>
+                  <td><a href="https://instagram.com/famsrwpp" target="_blank" rel="noopener noreferrer">famsrwpp</a></td>
                   <td class="num">1,972</td>
                   <td class="num">15</td>
                   <td>0</td>
@@ -1604,7 +1715,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">@da_chadon</a></td>
+                  <td><a href="https://instagram.com/da_chadon" target="_blank" rel="noopener noreferrer">da_chadon</a></td>
                   <td class="num">1,923</td>
                   <td class="num">74</td>
                   <td>0</td>
@@ -1617,7 +1728,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">@puynoon.22</a></td>
+                  <td><a href="https://instagram.com/puynoon.22" target="_blank" rel="noopener noreferrer">puynoon.22</a></td>
                   <td class="num">1,799</td>
                   <td class="num">41</td>
                   <td>0</td>
@@ -1630,7 +1741,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">@vousbeemvoyez</a></td>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
                   <td class="num">1,760</td>
                   <td class="num">64</td>
                   <td>3</td>
@@ -1643,7 +1754,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">@saintstst</a></td>
+                  <td><a href="https://instagram.com/saintstst" target="_blank" rel="noopener noreferrer">saintstst</a></td>
                   <td class="num">1,667</td>
                   <td class="num">55</td>
                   <td>2</td>
@@ -1656,7 +1767,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">@mayujangg</a></td>
+                  <td><a href="https://instagram.com/mayujangg" target="_blank" rel="noopener noreferrer">mayujangg</a></td>
                   <td class="num">1,651</td>
                   <td class="num">55</td>
                   <td>0</td>
@@ -1669,7 +1780,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">@grace.phapada</a></td>
+                  <td><a href="https://instagram.com/grace.phapada" target="_blank" rel="noopener noreferrer">grace.phapada</a></td>
                   <td class="num">1,593</td>
                   <td class="num">31</td>
                   <td>10</td>
@@ -1682,7 +1793,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">@aiiyadiary</a></td>
+                  <td><a href="https://instagram.com/aiiyadiary" target="_blank" rel="noopener noreferrer">aiiyadiary</a></td>
                   <td class="num">1,538</td>
                   <td class="num">150</td>
                   <td>22</td>
@@ -1695,7 +1806,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">@fanlytwin_s</a></td>
+                  <td><a href="https://instagram.com/fanlytwin_s" target="_blank" rel="noopener noreferrer">fanlytwin_s</a></td>
                   <td class="num">1,458</td>
                   <td class="num">43</td>
                   <td>0</td>
@@ -1708,7 +1819,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">@paevass</a></td>
+                  <td><a href="https://instagram.com/paevass" target="_blank" rel="noopener noreferrer">paevass</a></td>
                   <td class="num">1,446</td>
                   <td class="num">48</td>
                   <td>0</td>
@@ -1721,7 +1832,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">@teara_faa</a></td>
+                  <td><a href="https://instagram.com/teara_faa" target="_blank" rel="noopener noreferrer">teara_faa</a></td>
                   <td class="num">1,412</td>
                   <td class="num">35</td>
                   <td>0</td>
@@ -1734,7 +1845,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">@litaltp</a></td>
+                  <td><a href="https://instagram.com/litaltp" target="_blank" rel="noopener noreferrer">litaltp</a></td>
                   <td class="num">1,370</td>
                   <td class="num">3</td>
                   <td>0</td>
@@ -1747,7 +1858,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">@wilaibhorn_kh</a></td>
+                  <td><a href="https://instagram.com/wilaibhorn_kh" target="_blank" rel="noopener noreferrer">wilaibhorn_kh</a></td>
                   <td class="num">1,274</td>
                   <td class="num">32</td>
                   <td>12</td>
@@ -1760,7 +1871,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">@bank_apirak_</a></td>
+                  <td><a href="https://instagram.com/bank_apirak_" target="_blank" rel="noopener noreferrer">bank_apirak_</a></td>
                   <td class="num">1,248</td>
                   <td class="num">43</td>
                   <td>42</td>
@@ -1773,7 +1884,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">@saiparncm</a></td>
+                  <td><a href="https://instagram.com/saiparncm" target="_blank" rel="noopener noreferrer">saiparncm</a></td>
                   <td class="num">1,192</td>
                   <td class="num">9</td>
                   <td>0</td>
@@ -1786,7 +1897,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">@benjamin.akt</a></td>
+                  <td><a href="https://instagram.com/benjamin.akt" target="_blank" rel="noopener noreferrer">benjamin.akt</a></td>
                   <td class="num">1,159</td>
                   <td class="num">38</td>
                   <td>2</td>
@@ -1799,7 +1910,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">@gungging__g</a></td>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
                   <td class="num">1,156</td>
                   <td class="num">12</td>
                   <td>0</td>
@@ -1812,7 +1923,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">@sutharinee._</a></td>
+                  <td><a href="https://instagram.com/sutharinee._" target="_blank" rel="noopener noreferrer">sutharinee._</a></td>
                   <td class="num">1,139</td>
                   <td class="num">13</td>
                   <td>0</td>
@@ -1825,7 +1936,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mieispalmmie" target="_blank" rel="noopener noreferrer">@mieispalmmie</a></td>
+                  <td><a href="https://instagram.com/mieispalmmie" target="_blank" rel="noopener noreferrer">mieispalmmie</a></td>
                   <td class="num">1,094</td>
                   <td class="num">18</td>
                   <td>1</td>
@@ -1838,7 +1949,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">@melonmo</a></td>
+                  <td><a href="https://instagram.com/melonmo" target="_blank" rel="noopener noreferrer">melonmo</a></td>
                   <td class="num">1,077</td>
                   <td class="num">32</td>
                   <td>6</td>
@@ -1851,7 +1962,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">@sasi.care</a></td>
+                  <td><a href="https://instagram.com/sasi.care" target="_blank" rel="noopener noreferrer">sasi.care</a></td>
                   <td class="num">1,031</td>
                   <td class="num">69</td>
                   <td>2</td>
@@ -1864,7 +1975,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">@melairvoyante</a></td>
+                  <td><a href="https://instagram.com/melairvoyante" target="_blank" rel="noopener noreferrer">melairvoyante</a></td>
                   <td class="num">1,027</td>
                   <td class="num">31</td>
                   <td>0</td>
@@ -1877,7 +1988,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">@thisisnan.nan</a></td>
+                  <td><a href="https://instagram.com/thisisnan.nan" target="_blank" rel="noopener noreferrer">thisisnan.nan</a></td>
                   <td class="num">998</td>
                   <td class="num">41</td>
                   <td>11</td>
@@ -1890,7 +2001,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">@milkiesz</a></td>
+                  <td><a href="https://instagram.com/milkiesz" target="_blank" rel="noopener noreferrer">milkiesz</a></td>
                   <td class="num">974</td>
                   <td class="num">36</td>
                   <td>8</td>
@@ -1903,7 +2014,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">@_pewbo</a></td>
+                  <td><a href="https://instagram.com/_pewbo" target="_blank" rel="noopener noreferrer">_pewbo</a></td>
                   <td class="num">921</td>
                   <td class="num">25</td>
                   <td>4</td>
@@ -1916,7 +2027,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">@prombin</a></td>
+                  <td><a href="https://instagram.com/prombin" target="_blank" rel="noopener noreferrer">prombin</a></td>
                   <td class="num">875</td>
                   <td class="num">36</td>
                   <td>0</td>
@@ -1929,7 +2040,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/cindy_lxs" target="_blank" rel="noopener noreferrer">@cindy_lxs</a></td>
+                  <td><a href="https://instagram.com/cindy_lxs" target="_blank" rel="noopener noreferrer">cindy_lxs</a></td>
                   <td class="num">865</td>
                   <td class="num">25</td>
                   <td>0</td>
@@ -1942,7 +2053,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">@ingynesss</a></td>
+                  <td><a href="https://instagram.com/ingynesss" target="_blank" rel="noopener noreferrer">ingynesss</a></td>
                   <td class="num">865</td>
                   <td class="num">41</td>
                   <td>4</td>
@@ -1955,7 +2066,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">@yanipans</a></td>
+                  <td><a href="https://instagram.com/yanipans" target="_blank" rel="noopener noreferrer">yanipans</a></td>
                   <td class="num">865</td>
                   <td class="num">55</td>
                   <td>2</td>
@@ -1968,7 +2079,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">@sahutsaya</a></td>
+                  <td><a href="https://instagram.com/sahutsaya" target="_blank" rel="noopener noreferrer">sahutsaya</a></td>
                   <td class="num">841</td>
                   <td class="num">19</td>
                   <td>0</td>
@@ -1981,7 +2092,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">@namsomort_</a></td>
+                  <td><a href="https://instagram.com/namsomort_" target="_blank" rel="noopener noreferrer">namsomort_</a></td>
                   <td class="num">838</td>
                   <td class="num">50</td>
                   <td>1</td>
@@ -1994,7 +2105,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">@pyanisa</a></td>
+                  <td><a href="https://instagram.com/pyanisa" target="_blank" rel="noopener noreferrer">pyanisa</a></td>
                   <td class="num">749</td>
                   <td class="num">25</td>
                   <td>7</td>
@@ -2007,7 +2118,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">@arpowang</a></td>
+                  <td><a href="https://instagram.com/arpowang" target="_blank" rel="noopener noreferrer">arpowang</a></td>
                   <td class="num">707</td>
                   <td class="num">23</td>
                   <td>0</td>
@@ -2020,7 +2131,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/pritez_qp" target="_blank" rel="noopener noreferrer">@pritez_qp</a></td>
+                  <td><a href="https://instagram.com/pritez_qp" target="_blank" rel="noopener noreferrer">pritez_qp</a></td>
                   <td class="num">676</td>
                   <td class="num">15</td>
                   <td>5</td>
@@ -2033,7 +2144,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">@ssarochaa_</a></td>
+                  <td><a href="https://instagram.com/ssarochaa_" target="_blank" rel="noopener noreferrer">ssarochaa_</a></td>
                   <td class="num">675</td>
                   <td class="num">11</td>
                   <td>0</td>
@@ -2046,7 +2157,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">@kunyingkunya</a></td>
+                  <td><a href="https://instagram.com/kunyingkunya" target="_blank" rel="noopener noreferrer">kunyingkunya</a></td>
                   <td class="num">644</td>
                   <td class="num">31</td>
                   <td>2</td>
@@ -2059,7 +2170,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">@peacheryas</a></td>
+                  <td><a href="https://instagram.com/peacheryas" target="_blank" rel="noopener noreferrer">peacheryas</a></td>
                   <td class="num">644</td>
                   <td class="num">36</td>
                   <td>3</td>
@@ -2072,7 +2183,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">@gowithlove_review</a></td>
+                  <td><a href="https://instagram.com/gowithlove_review" target="_blank" rel="noopener noreferrer">gowithlove_review</a></td>
                   <td class="num">630</td>
                   <td class="num">26</td>
                   <td>10</td>
@@ -2085,7 +2196,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">@dish.is.dietfood</a></td>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
                   <td class="num">625</td>
                   <td class="num">7</td>
                   <td>0</td>
@@ -2098,7 +2209,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/orr.______" target="_blank" rel="noopener noreferrer">@orr.______</a></td>
+                  <td><a href="https://instagram.com/orr.______" target="_blank" rel="noopener noreferrer">orr.______</a></td>
                   <td class="num">624</td>
                   <td class="num">29</td>
                   <td>0</td>
@@ -2111,7 +2222,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">@dianadanai_</a></td>
+                  <td><a href="https://instagram.com/dianadanai_" target="_blank" rel="noopener noreferrer">dianadanai_</a></td>
                   <td class="num">622</td>
                   <td class="num">25</td>
                   <td>1</td>
@@ -2124,7 +2235,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">@aaeeyyy</a></td>
+                  <td><a href="https://instagram.com/aaeeyyy" target="_blank" rel="noopener noreferrer">aaeeyyy</a></td>
                   <td class="num">620</td>
                   <td class="num">25</td>
                   <td>2</td>
@@ -2137,7 +2248,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">@grace.isgrace</a></td>
+                  <td><a href="https://instagram.com/grace.isgrace" target="_blank" rel="noopener noreferrer">grace.isgrace</a></td>
                   <td class="num">605</td>
                   <td class="num">19</td>
                   <td>0</td>
@@ -2150,7 +2261,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">@milkjarin</a></td>
+                  <td><a href="https://instagram.com/milkjarin" target="_blank" rel="noopener noreferrer">milkjarin</a></td>
                   <td class="num">590</td>
                   <td class="num">22</td>
                   <td>0</td>
@@ -2163,7 +2274,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">@miteen.pn_</a></td>
+                  <td><a href="https://instagram.com/miteen.pn_" target="_blank" rel="noopener noreferrer">miteen.pn_</a></td>
                   <td class="num">577</td>
                   <td class="num">16</td>
                   <td>0</td>
@@ -2176,7 +2287,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">@rubybelles_</a></td>
+                  <td><a href="https://instagram.com/rubybelles_" target="_blank" rel="noopener noreferrer">rubybelles_</a></td>
                   <td class="num">567</td>
                   <td class="num">12</td>
                   <td>0</td>
@@ -2189,7 +2300,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">@pinky_pinkywinky</a></td>
+                  <td><a href="https://instagram.com/pinky_pinkywinky" target="_blank" rel="noopener noreferrer">pinky_pinkywinky</a></td>
                   <td class="num">559</td>
                   <td class="num">41</td>
                   <td>4</td>
@@ -2202,7 +2313,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">@mycookie.house_</a></td>
+                  <td><a href="https://instagram.com/mycookie.house_" target="_blank" rel="noopener noreferrer">mycookie.house_</a></td>
                   <td class="num">535</td>
                   <td class="num">13</td>
                   <td>0</td>
@@ -2215,7 +2326,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">@best.lingnoii</a></td>
+                  <td><a href="https://instagram.com/best.lingnoii" target="_blank" rel="noopener noreferrer">best.lingnoii</a></td>
                   <td class="num">525</td>
                   <td class="num">6</td>
                   <td>0</td>
@@ -2228,7 +2339,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">@minddyspm</a></td>
+                  <td><a href="https://instagram.com/minddyspm" target="_blank" rel="noopener noreferrer">minddyspm</a></td>
                   <td class="num">521</td>
                   <td class="num">11</td>
                   <td>2</td>
@@ -2241,7 +2352,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">@jantip.kob</a></td>
+                  <td><a href="https://instagram.com/jantip.kob" target="_blank" rel="noopener noreferrer">jantip.kob</a></td>
                   <td class="num">504</td>
                   <td class="num">11</td>
                   <td>3</td>
@@ -2254,7 +2365,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">@biwbewbill.biw</a></td>
+                  <td><a href="https://instagram.com/biwbewbill.biw" target="_blank" rel="noopener noreferrer">biwbewbill.biw</a></td>
                   <td class="num">500</td>
                   <td class="num">8</td>
                   <td>0</td>
@@ -2267,7 +2378,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bobo_lovely" target="_blank" rel="noopener noreferrer">@bobo_lovely</a></td>
+                  <td><a href="https://instagram.com/bobo_lovely" target="_blank" rel="noopener noreferrer">bobo_lovely</a></td>
                   <td class="num">472</td>
                   <td class="num">5</td>
                   <td>0</td>
@@ -2280,7 +2391,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">@haendibae</a></td>
+                  <td><a href="https://instagram.com/haendibae" target="_blank" rel="noopener noreferrer">haendibae</a></td>
                   <td class="num">471</td>
                   <td class="num">23</td>
                   <td>1</td>
@@ -2293,7 +2404,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">@bunnysp.pp</a></td>
+                  <td><a href="https://instagram.com/bunnysp.pp" target="_blank" rel="noopener noreferrer">bunnysp.pp</a></td>
                   <td class="num">427</td>
                   <td class="num">8</td>
                   <td>0</td>
@@ -2306,7 +2417,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">@aa_pornthip</a></td>
+                  <td><a href="https://instagram.com/aa_pornthip" target="_blank" rel="noopener noreferrer">aa_pornthip</a></td>
                   <td class="num">397</td>
                   <td class="num">11</td>
                   <td>0</td>
@@ -2319,7 +2430,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">@natachaa___x</a></td>
+                  <td><a href="https://instagram.com/natachaa___x" target="_blank" rel="noopener noreferrer">natachaa___x</a></td>
                   <td class="num">383</td>
                   <td class="num">7</td>
                   <td>0</td>
@@ -2332,7 +2443,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">@zmprw.psps</a></td>
+                  <td><a href="https://instagram.com/zmprw.psps" target="_blank" rel="noopener noreferrer">zmprw.psps</a></td>
                   <td class="num">378</td>
                   <td class="num">18</td>
                   <td>0</td>
@@ -2345,7 +2456,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">@babyjesse.ducky</a></td>
+                  <td><a href="https://instagram.com/babyjesse.ducky" target="_blank" rel="noopener noreferrer">babyjesse.ducky</a></td>
                   <td class="num">326</td>
                   <td class="num">14</td>
                   <td>8</td>
@@ -2358,7 +2469,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/porlykm" target="_blank" rel="noopener noreferrer">@porlykm</a></td>
+                  <td><a href="https://instagram.com/porlykm" target="_blank" rel="noopener noreferrer">porlykm</a></td>
                   <td class="num">300</td>
                   <td class="num">6</td>
                   <td>2</td>
@@ -2371,7 +2482,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">@madmeecyn</a></td>
+                  <td><a href="https://instagram.com/madmeecyn" target="_blank" rel="noopener noreferrer">madmeecyn</a></td>
                   <td class="num">286</td>
                   <td class="num">3</td>
                   <td>0</td>
@@ -2384,7 +2495,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">@weerachai_sinchai</a></td>
+                  <td><a href="https://instagram.com/weerachai_sinchai" target="_blank" rel="noopener noreferrer">weerachai_sinchai</a></td>
                   <td class="num">283</td>
                   <td class="num">8</td>
                   <td>0</td>
@@ -2397,7 +2508,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">@jamjampp</a></td>
+                  <td><a href="https://instagram.com/jamjampp" target="_blank" rel="noopener noreferrer">jamjampp</a></td>
                   <td class="num">270</td>
                   <td class="num">5</td>
                   <td>0</td>
@@ -2410,7 +2521,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">@c.hompink</a></td>
+                  <td><a href="https://instagram.com/c.hompink" target="_blank" rel="noopener noreferrer">c.hompink</a></td>
                   <td class="num">249</td>
                   <td class="num">3</td>
                   <td>0</td>
@@ -2423,7 +2534,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">@eellyyrose</a></td>
+                  <td><a href="https://instagram.com/eellyyrose" target="_blank" rel="noopener noreferrer">eellyyrose</a></td>
                   <td class="num">219</td>
                   <td class="num">12</td>
                   <td>0</td>
@@ -2436,7 +2547,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/mamameanreview" target="_blank" rel="noopener noreferrer">@mamameanreview</a></td>
+                  <td><a href="https://instagram.com/mamameanreview" target="_blank" rel="noopener noreferrer">mamameanreview</a></td>
                   <td class="num">185</td>
                   <td class="num">6</td>
                   <td>11</td>
@@ -2449,7 +2560,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">@f.fahhhc</a></td>
+                  <td><a href="https://instagram.com/f.fahhhc" target="_blank" rel="noopener noreferrer">f.fahhhc</a></td>
                   <td class="num">183</td>
                   <td class="num">6</td>
                   <td>0</td>
@@ -2462,7 +2573,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">@dedeehappy</a></td>
+                  <td><a href="https://instagram.com/dedeehappy" target="_blank" rel="noopener noreferrer">dedeehappy</a></td>
                   <td class="num">176</td>
                   <td class="num">27</td>
                   <td>2</td>
@@ -2475,7 +2586,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">@sommickez</a></td>
+                  <td><a href="https://instagram.com/sommickez" target="_blank" rel="noopener noreferrer">sommickez</a></td>
                   <td class="num">136</td>
                   <td class="num">11</td>
                   <td>4</td>
@@ -2488,7 +2599,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">@guitargero_</a></td>
+                  <td><a href="https://instagram.com/guitargero_" target="_blank" rel="noopener noreferrer">guitargero_</a></td>
                   <td class="num">134</td>
                   <td class="num">1</td>
                   <td>0</td>
@@ -2501,7 +2612,7 @@
                 </tr>
                 
                 <tr>
-                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">@nanseingleinkham</a></td>
+                  <td><a href="https://instagram.com/nanseingleinkham" target="_blank" rel="noopener noreferrer">nanseingleinkham</a></td>
                   <td class="num">120</td>
                   <td class="num">1</td>
                   <td>0</td>
@@ -2513,17 +2624,517 @@
                   <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
                 </tr>
                 </tbody>
-      </table>
+        </table>
+      </div>
+    </div>
+    <div id="tiktok-table" class="table-panel">
+      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--tiktok)">🎵 TikTok Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  <td>nutthanon_nat</td>
+                  <td class="num">416,600</td>
+                  <td class="num">14,900</td>
+                  <td>128</td>
+                  <td>1,543</td>
+                  <td>0</td>
+                  <td>642</td>
+                  <td class="er">4.13%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>bank_apirak_</td>
+                  <td class="num">2,564</td>
+                  <td class="num">52</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">2.11%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>gowithlove_review</td>
+                  <td class="num">1,848</td>
+                  <td class="num">34</td>
+                  <td>11</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>8</td>
+                  <td class="er">3.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>ffamee_10</td>
+                  <td class="num">1,387</td>
+                  <td class="num">64</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">5.05%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>bunnysp.pp</td>
+                  <td class="num">1,372</td>
+                  <td class="num">75</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">5.76%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>da_chadon</td>
+                  <td class="num">1,225</td>
+                  <td class="num">38</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>dianadanai_</td>
+                  <td class="num">1,217</td>
+                  <td class="num">55</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">5.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>wilaibhorn_kh</td>
+                  <td class="num">1,098</td>
+                  <td class="num">40</td>
+                  <td>17</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>14</td>
+                  <td class="er">7.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>ccattpns</td>
+                  <td class="num">1,039</td>
+                  <td class="num">21</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">2.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>naritta_ndi</td>
+                  <td class="num">587</td>
+                  <td class="num">14</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">3.24%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>haendibae</td>
+                  <td class="num">485</td>
+                  <td class="num">23</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">5.57%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>mycookie.house_</td>
+                  <td class="num">461</td>
+                  <td class="num">15</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">3.69%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>mieispalmmie</td>
+                  <td class="num">455</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">2.64%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>arpowang</td>
+                  <td class="num">438</td>
+                  <td class="num">20</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>milkiesz</td>
+                  <td class="num">409</td>
+                  <td class="num">23</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">8.07%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>sasi.care</td>
+                  <td class="num">398</td>
+                  <td class="num">68</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">18.59%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>pritez_qp</td>
+                  <td class="num">383</td>
+                  <td class="num">19</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">7.05%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>puynoon.22</td>
+                  <td class="num">362</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">8.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>best.lingnoii</td>
+                  <td class="num">352</td>
+                  <td class="num">33</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">11.08%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>porlykm</td>
+                  <td class="num">333</td>
+                  <td class="num">6</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">2.70%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>giftster__</td>
+                  <td class="num">309</td>
+                  <td class="num">16</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">5.83%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>thisisnan.nan</td>
+                  <td class="num">289</td>
+                  <td class="num">46</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">16.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>orr.______</td>
+                  <td class="num">276</td>
+                  <td class="num">23</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">9.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>grace.isgrace</td>
+                  <td class="num">245</td>
+                  <td class="num">33</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>6</td>
+                  <td class="er">18.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>benjamin.akt</td>
+                  <td class="num">241</td>
+                  <td class="num">33</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">13.69%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>vousbeemvoyez</td>
+                  <td class="num">239</td>
+                  <td class="num">9</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">5.02%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>famsrwpp</td>
+                  <td class="num">231</td>
+                  <td class="num">7</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.90%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>weerachai_sinchai</td>
+                  <td class="num">216</td>
+                  <td class="num">15</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">9.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>bobo_lovely</td>
+                  <td class="num">212</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">3.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>natachaa___x</td>
+                  <td class="num">201</td>
+                  <td class="num">12</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>dedeehappy</td>
+                  <td class="num">188</td>
+                  <td class="num">27</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">15.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>ingynesss</td>
+                  <td class="num">185</td>
+                  <td class="num">22</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">12.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>bbeembenja</td>
+                  <td class="num">178</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">4.49%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>guitargero_</td>
+                  <td class="num">171</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.17%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>mamameanreview</td>
+                  <td class="num">169</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">8.88%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>minddyspm</td>
+                  <td class="num">160</td>
+                  <td class="num">15</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">11.25%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>aa_pornthip</td>
+                  <td class="num">149</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">10.07%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>sommickez</td>
+                  <td class="num">134</td>
+                  <td class="num">7</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">8.21%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 <footer>Prepared for <strong>ZUS Coffee</strong> · Instagram KOL Campaign Report</footer>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('a[href*="instagram.com"]').forEach(function (link) {
-      link.textContent = link.textContent.trim().replace(/^@+/, '');
-    });
-
     var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
     var tables = document.querySelectorAll('.table-wrapper table');
 
@@ -2537,12 +3148,12 @@
         if (!sortableColumns.includes(baseLabel)) return;
 
         th.classList.add('sortable');
-        th.dataset.order = 'desc';
+        th.dataset.order = '';
         th.dataset.baseLabel = baseLabel;
         th.textContent = baseLabel + ' ↕';
 
         th.addEventListener('click', function () {
-          var nextOrder = th.dataset.order === 'asc' ? 'desc' : 'asc';
+          var nextOrder = th.dataset.order === 'desc' ? 'asc' : 'desc';
           var rows = Array.from(tbody.querySelectorAll('tr'));
 
           rows.sort(function (rowA, rowB) {
@@ -2561,7 +3172,6 @@
             if (!cell.classList.contains('sortable')) return;
             cell.classList.remove('active');
             cell.textContent = cell.dataset.baseLabel + ' ↕';
-            cell.dataset.order = 'desc';
           });
 
           th.classList.add('active');
@@ -2579,6 +3189,18 @@
         });
         var target = document.getElementById(targetId);
         if (target) target.classList.toggle('show');
+      });
+    });
+
+    document.querySelectorAll('.table-tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.dataset.tabTarget;
+        document.querySelectorAll('.table-tab-btn').forEach(function (tabBtn) {
+          tabBtn.classList.toggle('active', tabBtn === btn);
+        });
+        document.querySelectorAll('.table-panel').forEach(function (panel) {
+          panel.classList.toggle('active', panel.id === targetId);
+        });
       });
     });
   });
