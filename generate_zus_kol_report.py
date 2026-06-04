@@ -2,7 +2,9 @@
 import argparse
 import csv
 import html
+import re
 import statistics
+from dataclasses import dataclass
 from pathlib import Path
 
 POST_COLS = {
@@ -32,12 +34,89 @@ TIKTOK_COLS = {
     "saves": "TT - Save",
 }
 
+CANONICAL_COLUMNS = ["List"] + [POST_COLS[k] for k in POST_COLS] + [
+    REEL_COLS[k] for k in REEL_COLS
+] + [TIKTOK_COLS[k] for k in TIKTOK_COLS if TIKTOK_COLS[k]]
+
+FOXTELLS_ALIASES = {
+    "List": "List",
+    "Reels - View": "IG - View (Reels)",
+    "Reels - Like": "IG - Like (Reels)",
+    "Reels - Comment": "IG - Comment (Reels)",
+    "Reels - Share": "IG - Share (Reels)",
+    "Reels - Repost": "IG - Repost (Reels)",
+    "Reels - Save": "IG - Save (Reels)",
+    "Tiktok - View": "TT - View",
+    "Tiktok - Like": "TT - Like",
+    "Tiktok - Comment": "TT - Comment",
+    "Tiktok - Share": "TT - Share",
+    "Tiktok - Save": "TT - Save",
+}
+
 ALL_KEYS = ["views", "likes", "comments", "shares", "reposts", "saves"]
+
+
+@dataclass
+class ReportPayload:
+    campaign_id: str
+    campaign_name: str
+    total_kols: int
+    post_kols: int
+    reels_kols: int
+    tiktok_kols: int
+    has_post_data: bool
+    show_campaign_column: bool
+    pt: dict
+    rt: dict
+    tt: dict
+    pt_eng: int
+    rt_eng: int
+    tt_eng: int
+    combined_eng: int
+    post_avg_views: float
+    reels_avg_views: float
+    tiktok_avg_views: float
+    post_avg_er: float
+    reels_avg_er: float
+    tiktok_avg_er: float
+    reach_winner: str
+    reach_diff: int
+    reach_pct: float
+    er_winner: str
+    post_top_views: list
+    post_top_comments: list
+    post_top_saves: list
+    reels_top_views: list
+    reels_top_comments: list
+    reels_top_saves: list
+    tiktok_top_views: list
+    tiktok_top_comments: list
+    tiktok_top_saves: list
+    post_rows: list
+    reels_rows: list
+    tiktok_rows: list
+    post_views_mean: float
+    post_er_mean: float
+    post_views_sd: float
+    post_er_sd: float
+    reels_views_mean: float
+    reels_er_mean: float
+    reels_views_sd: float
+    reels_er_sd: float
+    tiktok_views_mean: float
+    tiktok_er_mean: float
+    tiktok_views_sd: float
+    tiktok_er_sd: float
 
 
 def parse_num(v):
     s = (v or "").strip().replace(",", "")
     return int(s) if s.isdigit() else None
+
+
+def slugify(text):
+    s = re.sub(r"[^a-z0-9]+", "-", text.lower())
+    return s.strip("-")
 
 
 def nfmt(v):
@@ -46,6 +125,10 @@ def nfmt(v):
 
 def pfmt(v):
     return f"{v:.2f}%"
+
+
+IG_ICON = '<img class="platform-icon" src="assets/instagram.png" alt="">'
+TT_ICON = '<img class="platform-icon" src="assets/tiktok.png" alt="">'
 
 
 def calc_er(likes, comments, shares, saves, views):
@@ -82,84 +165,149 @@ def tag_er(v, mean, sd):
     return ("👍 ❌ Minimal Engagement", "tag-minimal")
 
 
-def read_data(csv_path):
+def find_header_row(raw_rows):
+    for i, row in enumerate(raw_rows):
+        if row and (row[0] or "").strip() == "NO.":
+            return i
+    if raw_rows and (raw_rows[0][0] or "").strip() == "List":
+        return 0
+    raise ValueError("Could not find header row (expected NO. or List)")
+
+
+def normalize_row(row_dict):
+    out = {col: "" for col in CANONICAL_COLUMNS}
+    for src, dst in FOXTELLS_ALIASES.items():
+        if src in row_dict and row_dict[src] is not None:
+            out[dst] = row_dict[src]
+    if "List" in row_dict and row_dict["List"] is not None:
+        out["List"] = row_dict["List"]
+    for col in CANONICAL_COLUMNS:
+        if col in row_dict and row_dict[col] is not None:
+            out[col] = row_dict[col]
+    return out
+
+
+def extract_campaign_name(raw_rows, path):
+    for row in raw_rows[:6]:
+        if row and (row[0] or "").strip() == "In Process" and len(row) > 1:
+            name = (row[1] or "").strip()
+            if name:
+                return name
+    stem = path.stem
+    if stem.startswith("ZUS - "):
+        return stem[len("ZUS - ") :]
+    return stem
+
+
+def parse_kol_row(normalized, row_num):
+    username_raw = (normalized.get("List") or "").strip()
+    if not username_raw:
+        return None
+    username = username_raw.lstrip("@")
+
+    post_views = parse_num(normalized.get(POST_COLS["views"]))
+    reels_views = parse_num(normalized.get(REEL_COLS["views"]))
+    tiktok_views = parse_num(normalized.get(TIKTOK_COLS["views"]))
+    has_post = post_views is not None
+    has_reels = reels_views is not None
+    has_tiktok = tiktok_views is not None
+
+    post = {}
+    reels = {}
+    tiktok = {}
+    for k in ALL_KEYS:
+        p = parse_num(normalized.get(POST_COLS[k]))
+        rr = parse_num(normalized.get(REEL_COLS[k]))
+        tt_col = TIKTOK_COLS[k]
+        tt = parse_num(normalized.get(tt_col)) if tt_col else 0
+        post[k] = p if p is not None else 0
+        reels[k] = rr if rr is not None else 0
+        tiktok[k] = tt if tt is not None else 0
+
+    post_er = (
+        calc_er(
+            post["likes"],
+            post["comments"],
+            post["shares"],
+            post["saves"],
+            post["views"],
+        )
+        if has_post
+        else None
+    )
+    reels_er = (
+        calc_er(
+            reels["likes"],
+            reels["comments"],
+            reels["shares"],
+            reels["saves"],
+            reels["views"],
+        )
+        if has_reels
+        else None
+    )
+    tiktok_er = (
+        calc_er(
+            tiktok["likes"],
+            tiktok["comments"],
+            tiktok["shares"],
+            tiktok["saves"],
+            tiktok["views"],
+        )
+        if has_tiktok
+        else None
+    )
+
+    return {
+        "row": row_num,
+        "username": username,
+        "has_post": has_post,
+        "has_reels": has_reels,
+        "has_tiktok": has_tiktok,
+        "post": post,
+        "reels": reels,
+        "tiktok": tiktok,
+        "post_er": post_er,
+        "reels_er": reels_er,
+        "tiktok_er": tiktok_er,
+    }
+
+
+def read_campaign_csv(path):
+    path = Path(path)
+    with path.open(newline="", encoding="utf-8-sig") as f:
+        raw_rows = list(csv.reader(f))
+
+    header_idx = find_header_row(raw_rows)
+    headers = [(h or "").strip() for h in raw_rows[header_idx]]
+    campaign_name = extract_campaign_name(raw_rows, path)
+    campaign_id = slugify(path.stem)
+
     rows = []
-    with csv_path.open(newline="", encoding="utf-8-sig") as f:
-        for i, r in enumerate(csv.DictReader(f), start=2):
-            username_raw = (r.get("List") or "").strip()
-            if not username_raw:
-                continue
-            username = username_raw.lstrip("@")
+    for line_no, raw in enumerate(raw_rows[header_idx + 1 :], start=header_idx + 2):
+        if not raw or not any((c or "").strip() for c in raw):
+            continue
+        padded = raw + [""] * max(0, len(headers) - len(raw))
+        row_dict = dict(zip(headers, padded))
+        normalized = normalize_row(row_dict)
+        parsed = parse_kol_row(normalized, line_no)
+        if parsed:
+            rows.append(parsed)
 
-            post_views = parse_num(r.get(POST_COLS["views"]))
-            reels_views = parse_num(r.get(REEL_COLS["views"]))
-            tiktok_views = parse_num(r.get(TIKTOK_COLS["views"]))
-            has_post = post_views is not None
-            has_reels = reels_views is not None
-            has_tiktok = tiktok_views is not None
+    return campaign_id, campaign_name, rows
 
-            post = {}
-            reels = {}
-            tiktok = {}
-            for k in ALL_KEYS:
-                p = parse_num(r.get(POST_COLS[k]))
-                rr = parse_num(r.get(REEL_COLS[k]))
-                tt_col = TIKTOK_COLS[k]
-                tt = parse_num(r.get(tt_col)) if tt_col else 0
-                post[k] = p if p is not None else 0
-                reels[k] = rr if rr is not None else 0
-                tiktok[k] = tt if tt is not None else 0
 
-            post_er = (
-                calc_er(
-                    post["likes"],
-                    post["comments"],
-                    post["shares"],
-                    post["saves"],
-                    post["views"],
-                )
-                if has_post
-                else None
-            )
-            reels_er = (
-                calc_er(
-                    reels["likes"],
-                    reels["comments"],
-                    reels["shares"],
-                    reels["saves"],
-                    reels["views"],
-                )
-                if has_reels
-                else None
-            )
-            tiktok_er = (
-                calc_er(
-                    tiktok["likes"],
-                    tiktok["comments"],
-                    tiktok["shares"],
-                    tiktok["saves"],
-                    tiktok["views"],
-                )
-                if has_tiktok
-                else None
-            )
-
-            rows.append(
-                {
-                    "row": i,
-                    "username": username,
-                    "has_post": has_post,
-                    "has_reels": has_reels,
-                    "has_tiktok": has_tiktok,
-                    "post": post,
-                    "reels": reels,
-                    "tiktok": tiktok,
-                    "post_er": post_er,
-                    "reels_er": reels_er,
-                    "tiktok_er": tiktok_er,
-                }
-            )
-    return rows
+def load_campaigns(data_dir):
+    data_dir = Path(data_dir)
+    campaigns = {}
+    for path in sorted(data_dir.glob("*.csv")):
+        campaign_id, campaign_name, rows = read_campaign_csv(path)
+        campaigns[campaign_id] = {
+            "id": campaign_id,
+            "name": campaign_name,
+            "rows": rows,
+        }
+    return campaigns
 
 
 def top3(rows, metric):
@@ -185,43 +333,32 @@ def build_section_rows(source, metric_key, er_key, label):
     for r in source:
         vt, vc = tag_views(r[metric_key]["views"], views_mean, views_sd)
         et, ec = tag_er(r[er_key], er_mean, er_sd)
-        rows.append(
-            {
-                "username": r["username"],
-                "views": r[metric_key]["views"],
-                "likes": r[metric_key]["likes"],
-                "comments": r[metric_key]["comments"],
-                "shares": r[metric_key]["shares"],
-                "reposts": r[metric_key]["reposts"],
-                "saves": r[metric_key]["saves"],
-                "er": r[er_key],
-                "views_tag": vt,
-                "views_class": vc,
-                "er_tag": et,
-                "er_class": ec,
-                "label": label,
-            }
-        )
+        row_out = {
+            "username": r["username"],
+            "views": r[metric_key]["views"],
+            "likes": r[metric_key]["likes"],
+            "comments": r[metric_key]["comments"],
+            "shares": r[metric_key]["shares"],
+            "reposts": r[metric_key]["reposts"],
+            "saves": r[metric_key]["saves"],
+            "er": r[er_key],
+            "views_tag": vt,
+            "views_class": vc,
+            "er_tag": et,
+            "er_class": ec,
+            "label": label,
+        }
+        if "campaign_name" in r:
+            row_out["campaign_name"] = r["campaign_name"]
+        rows.append(row_out)
 
-    rows.sort(key=lambda x: (-x["views"], x["username"]))
+    rows.sort(key=lambda x: (-x["views"], x.get("campaign_name", ""), x["username"]))
     return rows, views_mean, er_mean, views_sd, er_sd
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input",
-        default="./raw.csv",
-    )
-    parser.add_argument(
-        "--output",
-        default="./index.html",
-    )
-    args = parser.parse_args()
-
-    rows = read_data(Path(args.input))
+def build_report(rows, campaign_id="all", campaign_name="All Campaigns", show_campaign_column=False):
     if not rows:
-        raise SystemExit("No rows found.")
+        raise ValueError("No rows found.")
 
     post_source = [r for r in rows if r["has_post"]]
     reels_source = [r for r in rows if r["has_reels"]]
@@ -241,6 +378,7 @@ def main():
     post_kols = len(post_rows)
     reels_kols = len(reels_rows)
     tiktok_kols = len(tiktok_rows)
+    has_post_data = post_kols > 0
 
     def totals(source, fmt):
         return {k: sum(r[fmt][k] for r in source) for k in ALL_KEYS}
@@ -268,46 +406,129 @@ def main():
     reach_pct = (reach_diff / reach_base) * 100
     er_winner = "Posts" if post_avg_er >= reels_avg_er else "Reels"
 
-    post_top_views = top3(post_rows, "views")
-    post_top_comments = top3(post_rows, "comments")
-    post_top_saves = top3(post_rows, "saves")
-    reels_top_views = top3(reels_rows, "views")
-    reels_top_comments = top3(reels_rows, "comments")
-    reels_top_saves = top3(reels_rows, "saves")
-    tiktok_top_views = top3(tiktok_rows, "views")
-    tiktok_top_comments = top3(tiktok_rows, "comments")
-    tiktok_top_saves = top3(tiktok_rows, "saves")
+    return ReportPayload(
+        campaign_id=campaign_id,
+        campaign_name=campaign_name,
+        total_kols=total_kols,
+        post_kols=post_kols,
+        reels_kols=reels_kols,
+        tiktok_kols=tiktok_kols,
+        has_post_data=has_post_data,
+        show_campaign_column=show_campaign_column,
+        pt=pt,
+        rt=rt,
+        tt=tt,
+        pt_eng=pt_eng,
+        rt_eng=rt_eng,
+        tt_eng=tt_eng,
+        combined_eng=combined_eng,
+        post_avg_views=post_avg_views,
+        reels_avg_views=reels_avg_views,
+        tiktok_avg_views=tiktok_avg_views,
+        post_avg_er=post_avg_er,
+        reels_avg_er=reels_avg_er,
+        tiktok_avg_er=tiktok_avg_er,
+        reach_winner=reach_winner,
+        reach_diff=reach_diff,
+        reach_pct=reach_pct,
+        er_winner=er_winner,
+        post_top_views=top3(post_rows, "views"),
+        post_top_comments=top3(post_rows, "comments"),
+        post_top_saves=top3(post_rows, "saves"),
+        reels_top_views=top3(reels_rows, "views"),
+        reels_top_comments=top3(reels_rows, "comments"),
+        reels_top_saves=top3(reels_rows, "saves"),
+        tiktok_top_views=top3(tiktok_rows, "views"),
+        tiktok_top_comments=top3(tiktok_rows, "comments"),
+        tiktok_top_saves=top3(tiktok_rows, "saves"),
+        post_rows=post_rows,
+        reels_rows=reels_rows,
+        tiktok_rows=tiktok_rows,
+        post_views_mean=post_views_mean,
+        post_er_mean=post_er_mean,
+        post_views_sd=post_views_sd,
+        post_er_sd=post_er_sd,
+        reels_views_mean=reels_views_mean,
+        reels_er_mean=reels_er_mean,
+        reels_views_sd=reels_views_sd,
+        reels_er_sd=reels_er_sd,
+        tiktok_views_mean=tiktok_views_mean,
+        tiktok_er_mean=tiktok_er_mean,
+        tiktok_views_sd=tiktok_views_sd,
+        tiktok_er_sd=tiktok_er_sd,
+    )
 
-    def top_html(rows3, metric, link=True):
-        out = []
-        for i, r in enumerate(rows3, start=1):
-            username_html = (
-                f'<a href="{html.escape(profile_link(r["username"]))}" target="_blank" rel="noopener noreferrer">{html.escape(r["username"])}</a>'
-                if link
-                else html.escape(r["username"])
-            )
-            out.append(
-                f"""
-                <div class="top3-item">
-                  <div class="rank-badge rank-{i}">{i}</div>
-                  <div class="top3-username">{username_html}</div>
-                  <div class="top3-val">{nfmt(r[metric])}</div>
-                </div>
-                """
-            )
-        return "".join(out)
 
-    def table_html(rowsx, link=True):
-        out = []
-        for r in rowsx:
-            username_html = (
-                f'<a href="{html.escape(profile_link(r["username"]))}" target="_blank" rel="noopener noreferrer">{html.escape(r["username"])}</a>'
-                if link
-                else html.escape(r["username"])
+def build_combined_report(campaigns):
+    pooled = []
+    for c in campaigns.values():
+        for r in c["rows"]:
+            pooled.append({**r, "campaign_name": c["name"]})
+    return build_report(
+        pooled,
+        campaign_id="all",
+        campaign_name="All Campaigns",
+        show_campaign_column=True,
+    )
+
+
+def kol_username_html(username, link=True):
+    if link:
+        return (
+            f'<a href="{html.escape(profile_link(username))}" target="_blank" '
+            f'rel="noopener noreferrer">{html.escape(username)}</a>'
+        )
+    return html.escape(username)
+
+
+def highlight_top3_rows(top_views, top_comments, top_saves, link=True):
+    def metric_row(label, rows3, metric):
+        entries = "".join(
+            f'<div class="highlight-entry">'
+            f'<span class="highlight-rank rank-{i}">{i}</span>'
+            f'<span class="highlight-user">{kol_username_html(r["username"], link)}</span>'
+            f'<span class="highlight-num">{nfmt(r[metric])}</span>'
+            f"</div>"
+            for i, r in enumerate(rows3, start=1)
+        )
+        return (
+            f'<div class="highlight-metric">'
+            f'<div class="highlight-metric-label">{label}</div>'
+            f'<div class="highlight-top3">{entries}</div>'
+            f"</div>"
+        )
+
+    return (
+        metric_row("👁️ Most Viewed", top_views, "views")
+        + metric_row("💬 Most Commented", top_comments, "comments")
+        + metric_row("💾 Most Saved", top_saves, "saves")
+    )
+
+
+def highlight_card(card_class, title_color, icon, title, top_views, top_comments, top_saves, link=True):
+    return f"""<div class="compare-card {card_class}">
+        <div class="compare-title" style="color:{title_color}">{icon} {title}</div>
+        {highlight_top3_rows(top_views, top_comments, top_saves, link)}
+      </div>"""
+
+
+def table_html(rowsx, link=True, show_campaign=False):
+    out = []
+    for r in rowsx:
+        username_html = (
+            f'<a href="{html.escape(profile_link(r["username"]))}" target="_blank" rel="noopener noreferrer">{html.escape(r["username"])}</a>'
+            if link
+            else html.escape(r["username"])
+        )
+        campaign_cell = ""
+        if show_campaign:
+            campaign_cell = (
+                f'<td>{html.escape(r.get("campaign_name", ""))}</td>'
             )
-            out.append(
-                f"""
+        out.append(
+            f"""
                 <tr>
+                  {campaign_cell}
                   <td>{username_html}</td>
                   <td class="num">{nfmt(r['views'])}</td>
                   <td class="num">{nfmt(r['likes'])}</td>
@@ -320,10 +541,221 @@ def main():
                   <td><span class="tag {r['er_class']}">{html.escape(r['er_tag'])}</span></td>
                 </tr>
                 """
-            )
-        return "".join(out)
+        )
+    return "".join(out)
 
-    output = f"""<!DOCTYPE html>
+
+def render_panel(r: ReportPayload) -> str:
+    sc = r.show_campaign_column
+    campaign_th = '<th>Campaign</th>' if sc else ""
+    post_tab_btn = ""
+    post_panel = ""
+    post_highlight_card = ""
+    post_compare_card = ""
+    post_overview_cards = ""
+    post_engagement_cards = ""
+    post_benchmarks = ""
+    pid = r.campaign_id
+    if r.has_post_data:
+        post_tab_btn = (
+            f'<button type="button" class="table-tab-btn" data-tab-target="post-table-{pid}">{IG_ICON} Posts</button>'
+        )
+        post_panel = f"""
+    <div id="post-table-{pid}" class="table-panel">
+      <div class="table-panel-title" style="color:var(--post)">{IG_ICON} Posts Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>{table_html(r.post_rows, show_campaign=sc)}</tbody>
+        </table>
+      </div>
+    </div>"""
+        post_highlight_card = highlight_card(
+            "posts",
+            "var(--post)",
+            IG_ICON,
+            "Posts",
+            r.post_top_views,
+            r.post_top_comments,
+            r.post_top_saves,
+        )
+        post_compare_card = f"""
+      <div class="compare-card posts">
+        <div class="compare-title" style="color:var(--post)">{IG_ICON} Posts</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.pt['views'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.pt['likes'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.pt['comments'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.pt['shares'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.pt['reposts'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.pt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.post_avg_views))}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.post_avg_er)}</span></div>
+      </div>"""
+        post_overview_cards = f"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt['views'])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data</div></div>"""
+        post_engagement_cards = f"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt['likes'])} · Comments {nfmt(r.pt['comments'])} · Shares {nfmt(r.pt['shares'])} · Saves {nfmt(r.pt['saves'])}</div></div>"""
+        post_benchmarks = f"""<strong>Post Benchmarks:</strong><br>
+      Views Mean {nfmt(round(r.post_views_mean))}, SD {nfmt(round(r.post_views_sd))}<br>
+      ER Mean {pfmt(r.post_er_mean)}, SD {pfmt(r.post_er_sd)}<br><br>"""
+
+    highlights_cards = (
+        highlight_card(
+            "tiktok",
+            "var(--tiktok)",
+            TT_ICON,
+            "TikTok",
+            r.tiktok_top_views,
+            r.tiktok_top_comments,
+            r.tiktok_top_saves,
+            link=False,
+        )
+        + highlight_card(
+            "reels",
+            "var(--reel)",
+            IG_ICON,
+            "Reels",
+            r.reels_top_views,
+            r.reels_top_comments,
+            r.reels_top_saves,
+        )
+        + post_highlight_card
+    )
+
+    compare_cols = post_compare_card + f"""
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)">{IG_ICON} Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt['views'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt['likes'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt['comments'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt['shares'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt['reposts'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.reels_avg_views))}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.reels_avg_er)}</span></div>
+      </div>
+      <div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)">{TT_ICON} TikTok</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.tt['views'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.tt['likes'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.tt['comments'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.tt['shares'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.tt['reposts'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.tt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.tiktok_avg_views))}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.tiktok_avg_er)}</span></div>
+      </div>"""
+
+    verdict = ""
+    if r.has_post_data:
+        verdict = f"""<div class="verdict"><strong>Key Takeaway:</strong> {r.reach_winner} led reach by <strong>{nfmt(r.reach_diff)} views</strong> ({r.reach_pct:.2f}% difference), while {r.er_winner} delivered stronger proportional engagement per view on average.</div>"""
+
+    return f"""
+<div class="campaign-panel" data-campaign="{html.escape(r.campaign_id)}">
+<div class="report-header">
+  <div class="header-tag">KOL Campaign Report</div>
+  <div class="header-title">ZUS Coffee</div>
+  <div class="header-sub">{html.escape(r.campaign_name)}</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
+    <div class="meta-item"><span class="meta-label">KOL Rows</span><span class="meta-value">{nfmt(r.total_kols)}</span></div>
+    <div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">{nfmt(r.post_kols)}</span></div>
+    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">{nfmt(r.reels_kols)}</span></div>
+    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">{nfmt(r.tiktok_kols)}</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">Campaign Overview</div>
+    <div class="overview-grid overview-grid-2">
+      {post_overview_cards}
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt['views'])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt['views'])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt['views'] + r.rt['views'] + r.tt['views'])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button></div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt['views'])}<br>Engagement: {nfmt(r.pt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt['views'])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt['views'])}<br>Engagement: {nfmt(r.tt_eng)}</div></div>
+    </div>
+    <div class="overview-grid overview-grid-2">
+      {post_engagement_cards}
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt['likes'])} · Comments {nfmt(r.rt['comments'])} · Shares {nfmt(r.rt['shares'])} · Saves {nfmt(r.rt['saves'])}</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt['likes'])} · Comments {nfmt(r.tt['comments'])} · Shares {nfmt(r.tt['shares'])} · Saves {nfmt(r.tt['saves'])}</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel + TikTok Engagement</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Posts vs. Reels Performance</div>
+    <div class="compare-grid">{compare_cols}</div>
+    {verdict}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top 3 Highlights</div>
+    <div class="compare-grid">{highlights_cards}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KOL Performance Tables</div>
+    <div class="appendix-note">
+      {post_benchmarks}
+      <strong>Reels Benchmarks:</strong><br>
+      Views Mean {nfmt(round(r.reels_views_mean))}, SD {nfmt(round(r.reels_views_sd))}<br>
+      ER Mean {pfmt(r.reels_er_mean)}, SD {pfmt(r.reels_er_sd)}<br><br>
+      <strong>TikTok Benchmarks:</strong><br>
+      Views Mean {nfmt(round(r.tiktok_views_mean))}, SD {nfmt(round(r.tiktok_views_sd))}<br>
+      ER Mean {pfmt(r.tiktok_er_mean)}, SD {pfmt(r.tiktok_er_sd)}
+    </div>
+    <div class="table-tabs">
+      <button type="button" class="table-tab-btn active" data-tab-target="tiktok-table-{pid}">{TT_ICON} TikTok</button>
+      <button type="button" class="table-tab-btn" data-tab-target="reel-table-{pid}">{IG_ICON} Reels</button>
+      {post_tab_btn}
+    </div>
+    <div id="tiktok-table-{pid}" class="table-panel active">
+      <div class="table-panel-title" style="color:var(--tiktok)">{TT_ICON} TikTok Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>{table_html(r.tiktok_rows, link=False, show_campaign=sc)}</tbody>
+        </table>
+      </div>
+    </div>
+    <div id="reel-table-{pid}" class="table-panel">
+      <div class="table-panel-title" style="color:var(--reel)">{IG_ICON} Reels Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>{table_html(r.reels_rows, show_campaign=sc)}</tbody>
+        </table>
+      </div>
+    </div>
+    {post_panel}
+  </div>
+</div>
+</div>"""
+
+
+def generate_html(reports):
+    switcher_items = []
+    if "all" in reports:
+        switcher_items.append(
+            '<button type="button" class="campaign-pill active" data-campaign="all">All Campaigns</button>'
+        )
+    for rid, rep in reports.items():
+        if rid == "all":
+            continue
+        active = " active" if "all" not in reports and len(switcher_items) == 0 else ""
+        switcher_items.append(
+            f'<button type="button" class="campaign-pill{active}" data-campaign="{html.escape(rid)}">{html.escape(rep.campaign_name)}</button>'
+        )
+    switcher_html = "\n".join(switcher_items)
+
+    panel_order = (["all"] if "all" in reports else []) + [
+        k for k in reports if k != "all"
+    ]
+    panels_html = ""
+    for rid in panel_order:
+        panels_html += render_panel(reports[rid])
+
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -340,6 +772,14 @@ def main():
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.6; }}
+  .campaign-bar {{ background: white; border-bottom: 1px solid var(--border); padding: 14px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(31,43,102,0.08); }}
+  .campaign-bar-inner {{ max-width: 1100px; margin: 0 auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }}
+  .campaign-bar-label {{ font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-soft); margin-right: 6px; }}
+  .campaign-pill {{ border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }}
+  .campaign-pill:hover {{ border-color: var(--zus-blue-soft); color: var(--deep); }}
+  .campaign-pill.active {{ background: var(--zus-blue); color: white; border-color: var(--zus-blue); }}
+  .campaign-panel {{ display: none; }}
+  .campaign-panel.active {{ display: block; }}
   .report-header {{ background: var(--zus-blue); color: white; padding: 56px 64px 40px; position: relative; overflow: hidden; }}
   .report-header::after {{ content: 'ZUS'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }}
   .header-tag {{ font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #CBD5FF; margin-bottom: 14px; }}
@@ -365,7 +805,8 @@ def main():
   .stat-num {{ font-family: 'Prompt', sans-serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }}
   .stat-label {{ font-size: 12px; font-weight: 500; color: var(--ink-soft); }}
   .stat-sublabel {{ font-size: 11px; color: var(--ink-soft); margin-top: 6px; }}
-  .stat-badge {{ display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }}
+  .platform-icon {{ width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }}
+  .stat-badge {{ display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }}
   .badge-post {{ background: var(--post-light); color: var(--post); }}
   .badge-reel {{ background: var(--reel-light); color: var(--reel); }}
   .badge-tiktok {{ background: var(--tiktok-light); color: var(--tiktok); }}
@@ -379,21 +820,25 @@ def main():
   .compare-card.posts {{ border-color: rgba(46,62,142,0.36); }}
   .compare-card.reels {{ border-color: rgba(55,82,200,0.36); }}
   .compare-card.tiktok {{ border-color: rgba(17,17,17,0.24); }}
-  .compare-title {{ font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }}
+  .compare-title {{ display: inline-flex; align-items: center; gap: 6px; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }}
   .compare-row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }}
   .compare-row:last-child {{ border: none; }}
   .compare-row-label {{ color: var(--ink-muted); font-weight: 500; }}
   .compare-row-val {{ font-weight: 700; color: var(--deep); font-size: 14px; }}
   .verdict {{ margin-top: 20px; padding: 16px 18px; background: var(--zus-blue-pale); border-left: 4px solid var(--zus-blue); border-radius: 10px; font-size: 13px; color: var(--deep); }}
-  .highlights-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }}
-  .highlight-section-title {{ font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }}
-  .top3-group {{ margin-bottom: 16px; }}
-  .top3-label {{ font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }}
-  .top3-list {{ display: flex; flex-direction: column; gap: 8px; }}
-  .top3-item {{ display: flex; align-items: center; gap: 10px; background: white; border-radius: 8px; padding: 9px 12px; border: 1px solid var(--border); }}
-  .rank-badge {{ width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }}
-  .rank-1 {{ background: #FFD700; color: #5A3800; }} .rank-2 {{ background: #C0C0C0; color: #333; }} .rank-3 {{ background: #CD7F32; color: #fff; }}
-  .top3-username {{ font-weight: 600; font-size: 13px; flex: 1; }} .top3-val {{ font-family: 'Prompt', sans-serif; font-weight: 700; font-size: 15px; }}
+  .highlight-metric {{ padding: 8px 0; border-bottom: 1px dashed var(--border); }}
+  .highlight-metric:last-child {{ border-bottom: none; }}
+  .highlight-metric-label {{ color: var(--ink-muted); font-weight: 500; font-size: 13px; margin-bottom: 6px; }}
+  .highlight-top3 {{ display: flex; flex-direction: column; gap: 4px; }}
+  .highlight-entry {{ display: flex; align-items: center; gap: 8px; font-size: 12px; width: 100%; }}
+  .highlight-user {{ flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }}
+  .highlight-user a {{ color: var(--zus-blue); text-decoration: none; }}
+  .highlight-user a:hover {{ text-decoration: underline; }}
+  .highlight-num {{ font-family: 'Prompt', sans-serif; font-weight: 700; color: var(--deep); flex-shrink: 0; font-size: 13px; }}
+  .highlight-rank {{ width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }}
+  .highlight-rank.rank-1 {{ background: #FFD700; color: #5A3800; }}
+  .highlight-rank.rank-2 {{ background: #C0C0C0; color: #333; }}
+  .highlight-rank.rank-3 {{ background: #CD7F32; color: #fff; }}
   .table-wrapper {{ overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); background: white; margin-bottom: 24px; }}
   table {{ width: 100%; border-collapse: collapse; background: white; }}
   thead tr {{ background: var(--zus-blue); color: rgba(255,255,255,0.92); }}
@@ -414,17 +859,11 @@ def main():
   .tag-engaging {{ background: #EAF0FF; color: #2A3E9D; }} .tag-moderate {{ background: #F0F2FF; color: #4D5FB5; }} .tag-low {{ background: #FFF0E8; color: #A24E1E; }} .tag-minimal {{ background: #FCE4E4; color: #8B1010; }}
   .appendix-note {{ background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }}
   .table-tabs {{ display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }}
-  .table-tab-btn {{ border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }}
+  .table-panel-title {{ display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; font-weight: 700; }}
+  .table-tab-btn {{ display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }}
   .table-tab-btn:hover {{ border-color: var(--zus-blue-soft); color: var(--deep); }}
-  .table-tab-btn.active {{ color: white; border-color: transparent; box-shadow: var(--shadow); }}
-  .table-tab-btn:focus,
-  .table-tab-btn:focus-visible {{ color: white; outline: none; }}
-  .table-tab-btn[data-tab-target="post-table"] {{ background: #F4F6FF; border-color: #C9D3FF; }}
-  .table-tab-btn[data-tab-target="reel-table"] {{ background: #EEF2FF; border-color: #C4D0FF; }}
-  .table-tab-btn[data-tab-target="tiktok-table"] {{ background: #F5F5F5; border-color: #D6D6D6; }}
-  .table-tab-btn.active[data-tab-target="post-table"] {{ background: var(--post); }}
-  .table-tab-btn.active[data-tab-target="reel-table"] {{ background: var(--reel); }}
-  .table-tab-btn.active[data-tab-target="tiktok-table"] {{ background: var(--tiktok); }}
+  .table-tab-btn.active {{ background: var(--zus-blue); color: white; border-color: var(--zus-blue); }}
+  .table-tab-btn.active:focus-visible {{ color: white; outline: none; }}
   .table-panel {{ display: none; }}
   .table-panel.active {{ display: block; }}
   footer {{ background: var(--zus-blue); color: rgba(255,255,255,0.6); text-align: center; padding: 20px; font-size: 11px; }}
@@ -435,7 +874,7 @@ def main():
   @media (max-width: 800px) {{
     .report-header {{ padding: 32px 20px; }}
     .container {{ padding: 24px 12px; }}
-    .overview-grid, .overview-grid-2, .overview-grid-3, .compare-grid, .highlights-grid {{ grid-template-columns: 1fr; }}
+    .overview-grid, .overview-grid-2, .overview-grid-3, .compare-grid {{ grid-template-columns: 1fr; }}
     .overview-grid .stat-card-post,
     .overview-grid .stat-card-reel,
     .overview-grid .stat-card-tiktok,
@@ -450,154 +889,21 @@ def main():
 </style>
 </head>
 <body>
-<div class="report-header">
-  <div class="header-tag">KOL Campaign Report</div>
-  <div class="header-title">ZUS Coffee</div>
-  <div class="header-sub">Instagram Influencer Performance Report</div>
-  <div class="header-meta">
-    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
-    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
-    <div class="meta-item"><span class="meta-label">KOL Rows</span><span class="meta-value">{nfmt(total_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">{nfmt(post_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">{nfmt(reels_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">{nfmt(tiktok_kols)}</span></div>
+<div class="campaign-bar">
+  <div class="campaign-bar-inner">
+    <span class="campaign-bar-label">Campaign</span>
+    {switcher_html}
   </div>
 </div>
-<div class="container">
-  <div class="section">
-    <div class="section-title">Campaign Overview</div>
-    <div class="overview-grid overview-grid-2">
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Posts</div><div class="stat-num">{nfmt(pt['views'])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(post_kols)} KOL rows with Post data</div></div>
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reels</div><div class="stat-num">{nfmt(rt['views'])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(reels_kols)} KOL rows with Reels data</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">🎵 TikTok</div><div class="stat-num">{nfmt(tt['views'])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(tiktok_kols)} KOL rows with TikTok data</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(pt['views'] + rt['views'] + tt['views'])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip">TikTok Stats</button></div><div id="post-tooltip" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(pt['views'])}<br>Engagement: {nfmt(pt_eng)}</div><div id="reel-tooltip" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(rt['views'])}<br>Engagement: {nfmt(rt_eng)}</div><div id="tiktok-tooltip" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(tt['views'])}<br>Engagement: {nfmt(tt_eng)}</div></div>
-    </div>
-    <div class="overview-grid overview-grid-2">
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">📷 Post Engagement</div><div class="stat-num">{nfmt(pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(pt['likes'])} · Comments {nfmt(pt['comments'])} · Shares {nfmt(pt['shares'])} · Saves {nfmt(pt['saves'])}</div></div>
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">🎬 Reel Engagement</div><div class="stat-num">{nfmt(rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(rt['likes'])} · Comments {nfmt(rt['comments'])} · Shares {nfmt(rt['shares'])} · Saves {nfmt(rt['saves'])}</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">🎵 TikTok Engagement</div><div class="stat-num">{nfmt(tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(tt['likes'])} · Comments {nfmt(tt['comments'])} · Shares {nfmt(tt['shares'])} · Saves {nfmt(tt['saves'])}</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel + TikTok Engagement</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-engagement-tooltip">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-engagement-tooltip">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-engagement-tooltip">TikTok Stats</button></div><div id="post-engagement-tooltip" class="mobile-tooltip"><strong>Post Engagement</strong><br>Total: {nfmt(pt_eng)}<br>Likes: {nfmt(pt['likes'])} · Comments: {nfmt(pt['comments'])}<br>Shares: {nfmt(pt['shares'])} · Saves: {nfmt(pt['saves'])}</div><div id="reel-engagement-tooltip" class="mobile-tooltip"><strong>Reel Engagement</strong><br>Total: {nfmt(rt_eng)}<br>Likes: {nfmt(rt['likes'])} · Comments: {nfmt(rt['comments'])}<br>Shares: {nfmt(rt['shares'])} · Saves: {nfmt(rt['saves'])}</div><div id="tiktok-engagement-tooltip" class="mobile-tooltip"><strong>TikTok Engagement</strong><br>Total: {nfmt(tt_eng)}<br>Likes: {nfmt(tt['likes'])} · Comments: {nfmt(tt['comments'])}<br>Shares: {nfmt(tt['shares'])} · Saves: {nfmt(tt['saves'])}</div></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Posts vs. Reels Performance</div>
-    <div class="compare-grid">
-      <div class="compare-card posts">
-        <div class="compare-title" style="color:var(--post)">📷 Posts</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(pt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(pt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(pt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(pt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(pt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(pt['saves'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(post_avg_views))}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(post_avg_er)}</span></div>
-      </div>
-      <div class="compare-card reels">
-        <div class="compare-title" style="color:var(--reel)">🎬 Reels</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(rt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(rt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(rt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(rt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(rt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(rt['saves'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(reels_avg_views))}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(reels_avg_er)}</span></div>
-      </div>
-      <div class="compare-card tiktok">
-        <div class="compare-title" style="color:var(--tiktok)">🎵 TikTok</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(tt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(tt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(tt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(tt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(tt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(tt['saves'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(tiktok_avg_views))}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(tiktok_avg_er)}</span></div>
-      </div>
-    </div>
-    <div class="verdict"><strong>Key Takeaway:</strong> {reach_winner} led reach by <strong>{nfmt(reach_diff)} views</strong> ({reach_pct:.2f}% difference), while {er_winner} delivered stronger proportional engagement per view on average.</div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Top 3 Highlights</div>
-    <div class="highlights-grid">
-      <div>
-        <div class="highlight-section-title" style="color:var(--post)">📷 Posts</div>
-        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">{top_html(post_top_views, 'views')}</div></div>
-        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">{top_html(post_top_comments, 'comments')}</div></div>
-        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">{top_html(post_top_saves, 'saves')}</div></div>
-      </div>
-      <div>
-        <div class="highlight-section-title" style="color:var(--reel)">🎬 Reels</div>
-        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">{top_html(reels_top_views, 'views')}</div></div>
-        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">{top_html(reels_top_comments, 'comments')}</div></div>
-        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">{top_html(reels_top_saves, 'saves')}</div></div>
-      </div>
-      <div>
-        <div class="highlight-section-title" style="color:var(--tiktok)">🎵 TikTok</div>
-        <div class="top3-group"><div class="top3-label">👁️ Most Viewed</div><div class="top3-list">{top_html(tiktok_top_views, 'views', link=False)}</div></div>
-        <div class="top3-group"><div class="top3-label">💬 Most Commented</div><div class="top3-list">{top_html(tiktok_top_comments, 'comments', link=False)}</div></div>
-        <div class="top3-group"><div class="top3-label">💾 Most Saved</div><div class="top3-list">{top_html(tiktok_top_saves, 'saves', link=False)}</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">KOL Performance Tables</div>
-    <div class="appendix-note">
-      <strong>Post Benchmarks:</strong><br>
-      Views Mean {nfmt(round(post_views_mean))}, SD {nfmt(round(post_views_sd))}<br>
-      ER Mean {pfmt(post_er_mean)}, SD {pfmt(post_er_sd)}<br><br>
-      <strong>Reels Benchmarks:</strong><br>
-      Views Mean {nfmt(round(reels_views_mean))}, SD {nfmt(round(reels_views_sd))}<br>
-      ER Mean {pfmt(reels_er_mean)}, SD {pfmt(reels_er_sd)}<br><br>
-      <strong>TikTok Benchmarks:</strong><br>
-      Views Mean {nfmt(round(tiktok_views_mean))}, SD {nfmt(round(tiktok_views_sd))}<br>
-      ER Mean {pfmt(tiktok_er_mean)}, SD {pfmt(tiktok_er_sd)}
-    </div>
-    <div class="table-tabs">
-      <button type="button" class="table-tab-btn active" data-tab-target="post-table">📷 Posts</button>
-      <button type="button" class="table-tab-btn" data-tab-target="reel-table">🎬 Reels</button>
-      <button type="button" class="table-tab-btn" data-tab-target="tiktok-table">🎵 TikTok</button>
-    </div>
-    <div id="post-table" class="table-panel active">
-      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--post)">📷 Posts Performance Table</div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(post_rows)}</tbody>
-        </table>
-      </div>
-    </div>
-    <div id="reel-table" class="table-panel">
-      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--reel)">🎬 Reels Performance Table</div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(reels_rows)}</tbody>
-        </table>
-      </div>
-    </div>
-    <div id="tiktok-table" class="table-panel">
-      <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--tiktok)">🎵 TikTok Performance Table</div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(tiktok_rows, link=False)}</tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+{panels_html}
 <footer>Prepared for <strong>ZUS Coffee</strong> · Instagram KOL Campaign Report</footer>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {{
-    var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
-    var tables = document.querySelectorAll('.table-wrapper table');
+  var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
 
-    tables.forEach(function (table) {{
+  function initPanelSort(panel) {{
+    panel.querySelectorAll('.table-wrapper table').forEach(function (table) {{
+      if (table.dataset.sortInit === '1') return;
+      table.dataset.sortInit = '1';
       var headerCells = Array.from(table.querySelectorAll('thead th'));
       var tbody = table.querySelector('tbody');
       if (!tbody) return;
@@ -623,9 +929,7 @@ def main():
             return nextOrder === 'asc' ? aNum - bNum : bNum - aNum;
           }});
 
-          rows.forEach(function (row) {{
-            tbody.appendChild(row);
-          }});
+          rows.forEach(function (row) {{ tbody.appendChild(row); }});
 
           headerCells.forEach(function (cell) {{
             if (!cell.classList.contains('sortable')) return;
@@ -639,11 +943,50 @@ def main():
         }});
       }});
     }});
+  }}
+
+  function initPanelTabs(panel) {{
+    panel.querySelectorAll('.table-tab-btn').forEach(function (btn) {{
+      if (btn.dataset.tabInit === '1') return;
+      btn.dataset.tabInit = '1';
+      btn.addEventListener('click', function () {{
+        var targetId = btn.dataset.tabTarget;
+        panel.querySelectorAll('.table-tab-btn').forEach(function (tabBtn) {{
+          tabBtn.classList.toggle('active', tabBtn === btn);
+        }});
+        panel.querySelectorAll('.table-panel').forEach(function (p) {{
+          p.classList.toggle('active', p.id === targetId);
+        }});
+      }});
+    }});
+  }}
+
+  function activateCampaign(campaignId) {{
+    document.querySelectorAll('.campaign-pill').forEach(function (pill) {{
+      pill.classList.toggle('active', pill.dataset.campaign === campaignId);
+    }});
+    document.querySelectorAll('.campaign-panel').forEach(function (panel) {{
+      var active = panel.dataset.campaign === campaignId;
+      panel.classList.toggle('active', active);
+      if (active) {{
+        initPanelSort(panel);
+        initPanelTabs(panel);
+      }}
+    }});
+  }}
+
+  document.addEventListener('DOMContentLoaded', function () {{
+    document.querySelectorAll('.campaign-pill').forEach(function (pill) {{
+      pill.addEventListener('click', function () {{
+        activateCampaign(pill.dataset.campaign);
+      }});
+    }});
 
     document.querySelectorAll('.mobile-tooltip-btn').forEach(function (btn) {{
       btn.addEventListener('click', function () {{
+        var panel = btn.closest('.campaign-panel');
         var targetId = btn.dataset.tooltipTarget;
-        document.querySelectorAll('.mobile-tooltip').forEach(function (tip) {{
+        panel.querySelectorAll('.mobile-tooltip').forEach(function (tip) {{
           if (tip.id !== targetId) tip.classList.remove('show');
         }});
         var target = document.getElementById(targetId);
@@ -651,31 +994,62 @@ def main():
       }});
     }});
 
-    document.querySelectorAll('.table-tab-btn').forEach(function (btn) {{
-      btn.addEventListener('click', function () {{
-        var targetId = btn.dataset.tabTarget;
-        document.querySelectorAll('.table-tab-btn').forEach(function (tabBtn) {{
-          tabBtn.classList.toggle('active', tabBtn === btn);
-        }});
-        document.querySelectorAll('.table-panel').forEach(function (panel) {{
-          panel.classList.toggle('active', panel.id === targetId);
-        }});
-      }});
-    }});
+    var defaultCampaign = document.querySelector('.campaign-pill.active');
+    activateCampaign(defaultCampaign ? defaultCampaign.dataset.campaign : 'all');
   }});
 </script>
 </body>
-</html>
-"""
+</html>"""
 
-    Path(args.output).write_text(output, encoding="utf-8")
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", default=None, help="Legacy single CSV (canonical raw.csv format)")
+    parser.add_argument("--data-dir", default="./data", help="Directory of Foxtells campaign CSVs")
+    parser.add_argument("--output", default="./index.html")
+    args = parser.parse_args()
+
+    reports = {}
+
+    if args.input:
+        path = Path(args.input)
+        campaign_id, campaign_name, rows = read_campaign_csv(path)
+        reports[campaign_id] = build_report(rows, campaign_id, campaign_name)
+    else:
+        campaigns = load_campaigns(args.data_dir)
+        if not campaigns:
+            raise SystemExit(f"No CSV files found in {args.data_dir}")
+        for cid, cdata in campaigns.items():
+            if not cdata["rows"]:
+                print(f"Warning: no KOL rows in {cdata['name']} ({cid})")
+            reports[cid] = build_report(
+                cdata["rows"], cid, cdata["name"]
+            )
+        reports["all"] = build_combined_report(campaigns)
+
+    output_html = generate_html(reports)
+    Path(args.output).write_text(output_html, encoding="utf-8")
     print(f"Generated report: {args.output}")
-    print(
-        f"KOL rows={total_kols}, post rows={post_kols}, reels rows={reels_kols}, tiktok rows={tiktok_kols}"
-    )
-    print(
-        f"Post views total={pt['views']}, Reel views total={rt['views']}, TikTok views total={tt['views']}"
-    )
+
+    if "all" in reports:
+        combined = reports["all"]
+        print(
+            f"Campaigns: {len(reports) - 1} (+ All Campaigns), "
+            f"combined KOL rows={combined.total_kols}"
+        )
+        for cid, rep in reports.items():
+            if cid == "all":
+                continue
+            print(
+                f"  {rep.campaign_name} ({cid}): "
+                f"KOL={rep.total_kols}, reels={rep.reels_kols}, tiktok={rep.tiktok_kols}"
+            )
+    else:
+        rep = next(iter(reports.values()))
+        print(
+            f"KOL rows={rep.total_kols}, post rows={rep.post_kols}, "
+            f"reels rows={rep.reels_kols}, tiktok rows={rep.tiktok_kols}"
+        )
 
 
 if __name__ == "__main__":
