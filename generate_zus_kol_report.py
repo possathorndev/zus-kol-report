@@ -407,11 +407,26 @@ def build_report(
         statistics.mean([r["er"] for r in tiktok_rows]) if tiktok_rows else 0
     )
 
-    reach_winner = "Reels" if rt["views"] >= pt["views"] else "Posts"
-    reach_diff = abs(rt["views"] - pt["views"])
-    reach_base = min(rt["views"], pt["views"]) if min(rt["views"], pt["views"]) else 1
-    reach_pct = (reach_diff / reach_base) * 100
-    er_winner = "Posts" if post_avg_er >= reels_avg_er else "Reels"
+    channel_stats = []
+    if tiktok_kols:
+        channel_stats.append(("TikTok", tt["views"], tiktok_avg_er))
+    if reels_kols:
+        channel_stats.append(("Reels", rt["views"], reels_avg_er))
+    if post_kols:
+        channel_stats.append(("Posts", pt["views"], post_avg_er))
+
+    if len(channel_stats) >= 2:
+        by_reach = sorted(channel_stats, key=lambda x: (-x[1], x[0]))
+        reach_winner = by_reach[0][0]
+        reach_diff = by_reach[0][1] - by_reach[1][1]
+        reach_base = by_reach[1][1] or 1
+        reach_pct = (reach_diff / reach_base) * 100
+        er_winner = max(channel_stats, key=lambda x: (x[2], x[0]))[0]
+    else:
+        reach_winner = channel_stats[0][0] if channel_stats else ""
+        reach_diff = 0
+        reach_pct = 0.0
+        er_winner = channel_stats[0][0] if channel_stats else ""
 
     return ReportPayload(
         campaign_id=campaign_id,
@@ -628,19 +643,7 @@ def render_panel(r: ReportPayload, brand: str) -> str:
     )
 
     compare_cols = (
-        post_compare_card
-        + f"""
-      <div class="compare-card reels">
-        <div class="compare-title" style="color:var(--reel)">{IG_ICON} Reels</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt["views"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt["likes"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt["comments"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt["shares"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt["reposts"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt["saves"])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.reels_avg_views))}</span></div>
-        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.reels_avg_er)}</span></div>
-      </div>
+        f"""
       <div class="compare-card tiktok">
         <div class="compare-title" style="color:var(--tiktok)">{TT_ICON} TikTok</div>
         <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.tt["views"])}</span></div>
@@ -651,12 +654,60 @@ def render_panel(r: ReportPayload, brand: str) -> str:
         <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.tt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.tiktok_avg_views))}</span></div>
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.tiktok_avg_er)}</span></div>
+      </div>
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)">{IG_ICON} Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt["views"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt["likes"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt["comments"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt["shares"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt["reposts"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt["saves"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.reels_avg_views))}</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.reels_avg_er)}</span></div>
       </div>"""
+        + post_compare_card
     )
 
+    show_verdict = sum(1 for k in (r.tiktok_kols, r.reels_kols, r.post_kols) if k > 0) >= 2
     verdict = ""
-    if r.has_post_data:
-        verdict = f"""<div class="verdict"><strong>Key Takeaway:</strong> {r.reach_winner} led reach by <strong>{nfmt(r.reach_diff)} views</strong> ({r.reach_pct:.2f}% difference), while {r.er_winner} delivered stronger proportional engagement per view on average.</div>"""
+    if show_verdict:
+        verdict = f"""<div class="verdict"><strong>Key Takeaway:</strong> {r.reach_winner} led reach by <strong>{nfmt(r.reach_diff)} views</strong> ({r.reach_pct:.2f}% ahead of the next channel), while {r.er_winner} delivered stronger proportional engagement per view on average.</div>"""
+
+    row_meta = []
+    if r.tiktok_kols > 0:
+        row_meta.append(
+            f'<div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">{nfmt(r.tiktok_kols)}</span></div>'
+        )
+    if r.reels_kols > 0:
+        row_meta.append(
+            f'<div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">{nfmt(r.reels_kols)}</span></div>'
+        )
+    if r.post_kols > 0:
+        row_meta.append(
+            f'<div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">{nfmt(r.post_kols)}</span></div>'
+        )
+    row_meta_html = "\n    ".join(row_meta)
+
+    tiktok_overview_card = f"""
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt["views"])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>"""
+    reels_overview_card = f"""
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt["views"])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>"""
+    total_overview_card = f"""
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button></div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}<br>Engagement: {nfmt(r.tt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}<br>Engagement: {nfmt(r.pt_eng)}</div></div>"""
+    tiktok_engagement_card = f"""
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Saves {nfmt(r.tt["saves"])}</div></div>"""
+    reels_engagement_card = f"""
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt["likes"])} · Comments {nfmt(r.rt["comments"])} · Shares {nfmt(r.rt["shares"])} · Saves {nfmt(r.rt["saves"])}</div></div>"""
+    combined_engagement_card = f"""
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">TikTok + Reel + Post Engagement</div></div>"""
+
+    tiktok_benchmarks = f"""<strong>TikTok Benchmarks:</strong><br>
+      Views Mean {nfmt(round(r.tiktok_views_mean))}, SD {nfmt(round(r.tiktok_views_sd))}<br>
+      ER Mean {pfmt(r.tiktok_er_mean)}, SD {pfmt(r.tiktok_er_sd)}<br><br>"""
+    reels_benchmarks = f"""<strong>Reels Benchmarks:</strong><br>
+      Views Mean {nfmt(round(r.reels_views_mean))}, SD {nfmt(round(r.reels_views_sd))}<br>
+      ER Mean {pfmt(r.reels_er_mean)}, SD {pfmt(r.reels_er_sd)}<br><br>"""
 
     return f"""
 <div class="campaign-panel" data-campaign="{html.escape(r.campaign_id)}">
@@ -667,31 +718,28 @@ def render_panel(r: ReportPayload, brand: str) -> str:
   <div class="header-meta">
     <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
     <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
-    <div class="meta-item"><span class="meta-label">KOL Rows</span><span class="meta-value">{nfmt(r.total_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">Post Rows</span><span class="meta-value">{nfmt(r.post_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">{nfmt(r.reels_kols)}</span></div>
-    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">{nfmt(r.tiktok_kols)}</span></div>
+    {row_meta_html}
   </div>
 </div>
 <div class="container">
   <div class="section">
     <div class="section-title">Campaign Overview</div>
     <div class="overview-grid overview-grid-2">
+      {tiktok_overview_card}
+      {reels_overview_card}
       {post_overview_cards}
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt["views"])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt["views"])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button></div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}<br>Engagement: {nfmt(r.pt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}<br>Engagement: {nfmt(r.tt_eng)}</div></div>
+      {total_overview_card}
     </div>
     <div class="overview-grid overview-grid-2">
+      {tiktok_engagement_card}
+      {reels_engagement_card}
       {post_engagement_cards}
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt["likes"])} · Comments {nfmt(r.rt["comments"])} · Shares {nfmt(r.rt["shares"])} · Saves {nfmt(r.rt["saves"])}</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Saves {nfmt(r.tt["saves"])}</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel + TikTok Engagement</div></div>
+      {combined_engagement_card}
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">Posts vs. Reels Performance</div>
+    <div class="section-title">Performance by Channel</div>
     <div class="compare-grid">{compare_cols}</div>
     {verdict}
   </div>
@@ -704,13 +752,9 @@ def render_panel(r: ReportPayload, brand: str) -> str:
   <div class="section">
     <div class="section-title">KOL Performance Tables</div>
     <div class="appendix-note">
+      {tiktok_benchmarks}
+      {reels_benchmarks}
       {post_benchmarks}
-      <strong>Reels Benchmarks:</strong><br>
-      Views Mean {nfmt(round(r.reels_views_mean))}, SD {nfmt(round(r.reels_views_sd))}<br>
-      ER Mean {pfmt(r.reels_er_mean)}, SD {pfmt(r.reels_er_sd)}<br><br>
-      <strong>TikTok Benchmarks:</strong><br>
-      Views Mean {nfmt(round(r.tiktok_views_mean))}, SD {nfmt(round(r.tiktok_views_sd))}<br>
-      ER Mean {pfmt(r.tiktok_er_mean)}, SD {pfmt(r.tiktok_er_sd)}
     </div>
     <div class="table-tabs">
       <button type="button" class="table-tab-btn active" data-tab-target="tiktok-table-{pid}">{TT_ICON} TikTok</button>
