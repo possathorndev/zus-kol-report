@@ -8,11 +8,13 @@ Generates a static HTML performance report for ZUS Coffee KOL campaigns from Fox
 
 ```bash
 # Multi-campaign (default): load all data/*.csv, combined + per-campaign views
-python3 generate_zus_kol_report.py --data-dir ./data --output ./index.html
+python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 
 # Legacy single file (canonical raw.csv schema)
-python3 generate_zus_kol_report.py --input ./raw.csv --output ./index.html
+python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
+
+`--brand` sets the full name in title, header, and footer (default: `ZUS Coffee`). `--brand-short` sets the header watermark and the filename prefix stripped for campaign names (default: `ZUS`, so `ZUS - Foo.csv` → campaign name `Foo`).
 
 `index.html` is generated output — do not hand-edit; regenerate with the script.
 
@@ -32,7 +34,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --output ./index.html
 
 - Rows 1–5 are metadata — skipped
 - **Header row**: first row where column A is `NO.` (usually line 6)
-- **Campaign name**: `Project` on the `In Process` row; else filename stem with `ZUS - ` removed
+- **Campaign name**: `Project` on the `In Process` row; else filename stem with `<brand-short> - ` removed (default prefix: `ZUS - `)
 - **Campaign id**: slugified filename stem (e.g. `ZUS - 5.5.csv` → `zus-5-5`)
 
 ### Column aliases (Foxtells → canonical)

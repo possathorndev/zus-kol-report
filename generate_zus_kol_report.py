@@ -34,12 +34,16 @@ TIKTOK_COLS = {
     "saves": "TT - Save",
 }
 
-CANONICAL_COLUMNS = ["List"] + [POST_COLS[k] for k in POST_COLS] + [
-    REEL_COLS[k] for k in REEL_COLS
-] + [TIKTOK_COLS[k] for k in TIKTOK_COLS if TIKTOK_COLS[k]]
+CANONICAL_COLUMNS = (
+    ["List"]
+    + [POST_COLS[k] for k in POST_COLS]
+    + [REEL_COLS[k] for k in REEL_COLS]
+    + [TIKTOK_COLS[k] for k in TIKTOK_COLS if TIKTOK_COLS[k]]
+)
 
 FOXTELLS_ALIASES = {
     "List": "List",
+    "Tiktok Channel": "List",
     "Reels - View": "IG - View (Reels)",
     "Reels - Like": "IG - Like (Reels)",
     "Reels - Comment": "IG - Comment (Reels)",
@@ -167,7 +171,7 @@ def tag_er(v, mean, sd):
 
 def find_header_row(raw_rows):
     for i, row in enumerate(raw_rows):
-        if row and (row[0] or "").strip() == "NO.":
+        if row and (row[0] or "").strip().upper() == "NO.":
             return i
     if raw_rows and (raw_rows[0][0] or "").strip() == "List":
         return 0
@@ -187,15 +191,16 @@ def normalize_row(row_dict):
     return out
 
 
-def extract_campaign_name(raw_rows, path):
+def extract_campaign_name(raw_rows, path, brand_short):
     for row in raw_rows[:6]:
         if row and (row[0] or "").strip() == "In Process" and len(row) > 1:
             name = (row[1] or "").strip()
             if name:
                 return name
     stem = path.stem
-    if stem.startswith("ZUS - "):
-        return stem[len("ZUS - ") :]
+    prefix = f"{brand_short} - "
+    if stem.startswith(prefix):
+        return stem[len(prefix) :]
     return stem
 
 
@@ -273,14 +278,14 @@ def parse_kol_row(normalized, row_num):
     }
 
 
-def read_campaign_csv(path):
+def read_campaign_csv(path, brand_short="ZUS"):
     path = Path(path)
     with path.open(newline="", encoding="utf-8-sig") as f:
         raw_rows = list(csv.reader(f))
 
     header_idx = find_header_row(raw_rows)
     headers = [(h or "").strip() for h in raw_rows[header_idx]]
-    campaign_name = extract_campaign_name(raw_rows, path)
+    campaign_name = extract_campaign_name(raw_rows, path, brand_short)
     campaign_id = slugify(path.stem)
 
     rows = []
@@ -297,11 +302,11 @@ def read_campaign_csv(path):
     return campaign_id, campaign_name, rows
 
 
-def load_campaigns(data_dir):
+def load_campaigns(data_dir, brand_short="ZUS"):
     data_dir = Path(data_dir)
     campaigns = {}
     for path in sorted(data_dir.glob("*.csv")):
-        campaign_id, campaign_name, rows = read_campaign_csv(path)
+        campaign_id, campaign_name, rows = read_campaign_csv(path, brand_short)
         campaigns[campaign_id] = {
             "id": campaign_id,
             "name": campaign_name,
@@ -356,7 +361,9 @@ def build_section_rows(source, metric_key, er_key, label):
     return rows, views_mean, er_mean, views_sd, er_sd
 
 
-def build_report(rows, campaign_id="all", campaign_name="All Campaigns", show_campaign_column=False):
+def build_report(
+    rows, campaign_id="all", campaign_name="All Campaigns", show_campaign_column=False
+):
     if not rows:
         raise ValueError("No rows found.")
 
@@ -505,7 +512,9 @@ def highlight_top3_rows(top_views, top_comments, top_saves, link=True):
     )
 
 
-def highlight_card(card_class, title_color, icon, title, top_views, top_comments, top_saves, link=True):
+def highlight_card(
+    card_class, title_color, icon, title, top_views, top_comments, top_saves, link=True
+):
     return f"""<div class="compare-card {card_class}">
         <div class="compare-title" style="color:{title_color}">{icon} {title}</div>
         {highlight_top3_rows(top_views, top_comments, top_saves, link)}
@@ -522,32 +531,30 @@ def table_html(rowsx, link=True, show_campaign=False):
         )
         campaign_cell = ""
         if show_campaign:
-            campaign_cell = (
-                f'<td>{html.escape(r.get("campaign_name", ""))}</td>'
-            )
+            campaign_cell = f"<td>{html.escape(r.get('campaign_name', ''))}</td>"
         out.append(
             f"""
                 <tr>
                   {campaign_cell}
                   <td>{username_html}</td>
-                  <td class="num">{nfmt(r['views'])}</td>
-                  <td class="num">{nfmt(r['likes'])}</td>
-                  <td>{nfmt(r['comments'])}</td>
-                  <td>{nfmt(r['shares'])}</td>
-                  <td>{nfmt(r['reposts'])}</td>
-                  <td>{nfmt(r['saves'])}</td>
-                  <td class="er">{pfmt(r['er'])}</td>
-                  <td><span class="tag {r['views_class']}">{html.escape(r['views_tag'])}</span></td>
-                  <td><span class="tag {r['er_class']}">{html.escape(r['er_tag'])}</span></td>
+                  <td class="num">{nfmt(r["views"])}</td>
+                  <td class="num">{nfmt(r["likes"])}</td>
+                  <td>{nfmt(r["comments"])}</td>
+                  <td>{nfmt(r["shares"])}</td>
+                  <td>{nfmt(r["reposts"])}</td>
+                  <td>{nfmt(r["saves"])}</td>
+                  <td class="er">{pfmt(r["er"])}</td>
+                  <td><span class="tag {r["views_class"]}">{html.escape(r["views_tag"])}</span></td>
+                  <td><span class="tag {r["er_class"]}">{html.escape(r["er_tag"])}</span></td>
                 </tr>
                 """
         )
     return "".join(out)
 
 
-def render_panel(r: ReportPayload) -> str:
+def render_panel(r: ReportPayload, brand: str) -> str:
     sc = r.show_campaign_column
-    campaign_th = '<th>Campaign</th>' if sc else ""
+    campaign_th = "<th>Campaign</th>" if sc else ""
     post_tab_btn = ""
     post_panel = ""
     post_highlight_card = ""
@@ -557,9 +564,7 @@ def render_panel(r: ReportPayload) -> str:
     post_benchmarks = ""
     pid = r.campaign_id
     if r.has_post_data:
-        post_tab_btn = (
-            f'<button type="button" class="table-tab-btn" data-tab-target="post-table-{pid}">{IG_ICON} Posts</button>'
-        )
+        post_tab_btn = f'<button type="button" class="table-tab-btn" data-tab-target="post-table-{pid}">{IG_ICON} Posts</button>'
         post_panel = f"""
     <div id="post-table-{pid}" class="table-panel">
       <div class="table-panel-title" style="color:var(--post)">{IG_ICON} Posts Performance Table</div>
@@ -582,19 +587,19 @@ def render_panel(r: ReportPayload) -> str:
         post_compare_card = f"""
       <div class="compare-card posts">
         <div class="compare-title" style="color:var(--post)">{IG_ICON} Posts</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.pt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.pt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.pt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.pt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.pt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.pt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.pt["views"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.pt["likes"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.pt["comments"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.pt["shares"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.pt["reposts"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.pt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.post_avg_views))}</span></div>
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.post_avg_er)}</span></div>
       </div>"""
         post_overview_cards = f"""
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt['views'])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data</div></div>"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt["views"])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data</div></div>"""
         post_engagement_cards = f"""
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt['likes'])} · Comments {nfmt(r.pt['comments'])} · Shares {nfmt(r.pt['shares'])} · Saves {nfmt(r.pt['saves'])}</div></div>"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt["likes"])} · Comments {nfmt(r.pt["comments"])} · Shares {nfmt(r.pt["shares"])} · Saves {nfmt(r.pt["saves"])}</div></div>"""
         post_benchmarks = f"""<strong>Post Benchmarks:</strong><br>
       Views Mean {nfmt(round(r.post_views_mean))}, SD {nfmt(round(r.post_views_sd))}<br>
       ER Mean {pfmt(r.post_er_mean)}, SD {pfmt(r.post_er_sd)}<br><br>"""
@@ -622,29 +627,32 @@ def render_panel(r: ReportPayload) -> str:
         + post_highlight_card
     )
 
-    compare_cols = post_compare_card + f"""
+    compare_cols = (
+        post_compare_card
+        + f"""
       <div class="compare-card reels">
         <div class="compare-title" style="color:var(--reel)">{IG_ICON} Reels</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt["views"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt["likes"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt["comments"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt["shares"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt["reposts"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.reels_avg_views))}</span></div>
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.reels_avg_er)}</span></div>
       </div>
       <div class="compare-card tiktok">
         <div class="compare-title" style="color:var(--tiktok)">{TT_ICON} TikTok</div>
-        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.tt['views'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.tt['likes'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.tt['comments'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.tt['shares'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.tt['reposts'])}</span></div>
-        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.tt['saves'])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.tt["views"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.tt["likes"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.tt["comments"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.tt["shares"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.tt["reposts"])}</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.tt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.tiktok_avg_views))}</span></div>
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.tiktok_avg_er)}</span></div>
       </div>"""
+    )
 
     verdict = ""
     if r.has_post_data:
@@ -654,7 +662,7 @@ def render_panel(r: ReportPayload) -> str:
 <div class="campaign-panel" data-campaign="{html.escape(r.campaign_id)}">
 <div class="report-header">
   <div class="header-tag">KOL Campaign Report</div>
-  <div class="header-title">ZUS Coffee</div>
+  <div class="header-title">{html.escape(brand)}</div>
   <div class="header-sub">{html.escape(r.campaign_name)}</div>
   <div class="header-meta">
     <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
@@ -670,14 +678,14 @@ def render_panel(r: ReportPayload) -> str:
     <div class="section-title">Campaign Overview</div>
     <div class="overview-grid overview-grid-2">
       {post_overview_cards}
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt['views'])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt['views'])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt['views'] + r.rt['views'] + r.tt['views'])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button></div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt['views'])}<br>Engagement: {nfmt(r.pt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt['views'])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt['views'])}<br>Engagement: {nfmt(r.tt_eng)}</div></div>
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt["views"])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt["views"])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">Posts + Reels + TikTok</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button></div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}<br>Engagement: {nfmt(r.pt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}<br>Engagement: {nfmt(r.tt_eng)}</div></div>
     </div>
     <div class="overview-grid overview-grid-2">
       {post_engagement_cards}
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt['likes'])} · Comments {nfmt(r.rt['comments'])} · Shares {nfmt(r.rt['shares'])} · Saves {nfmt(r.rt['saves'])}</div></div>
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt['likes'])} · Comments {nfmt(r.tt['comments'])} · Shares {nfmt(r.tt['shares'])} · Saves {nfmt(r.tt['saves'])}</div></div>
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt["likes"])} · Comments {nfmt(r.rt["comments"])} · Shares {nfmt(r.rt["shares"])} · Saves {nfmt(r.rt["saves"])}</div></div>
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Saves {nfmt(r.tt["saves"])}</div></div>
       <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">Post + Reel + TikTok Engagement</div></div>
     </div>
   </div>
@@ -733,7 +741,9 @@ def render_panel(r: ReportPayload) -> str:
 </div>"""
 
 
-def generate_html(reports):
+def generate_html(reports, brand, brand_short):
+    # Escape for use inside a CSS single-quoted string (watermark content:)
+    brand_short_css = brand_short.replace("\\", "\\\\").replace("'", "\\'")
     switcher_items = []
     if "all" in reports:
         switcher_items.append(
@@ -753,14 +763,14 @@ def generate_html(reports):
     ]
     panels_html = ""
     for rid in panel_order:
-        panels_html += render_panel(reports[rid])
+        panels_html += render_panel(reports[rid], brand)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZUS Coffee</title>
+<title>{html.escape(brand)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {{
@@ -781,7 +791,7 @@ def generate_html(reports):
   .campaign-panel {{ display: none; }}
   .campaign-panel.active {{ display: block; }}
   .report-header {{ background: var(--zus-blue); color: white; padding: 56px 64px 40px; position: relative; overflow: hidden; }}
-  .report-header::after {{ content: 'ZUS'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }}
+  .report-header::after {{ content: '{brand_short_css}'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }}
   .header-tag {{ font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #CBD5FF; margin-bottom: 14px; }}
   .header-title {{ font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }}
   .header-sub {{ font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.8); margin-bottom: 24px; }}
@@ -896,7 +906,7 @@ def generate_html(reports):
   </div>
 </div>
 {panels_html}
-<footer>Prepared for <strong>ZUS Coffee</strong> · Instagram KOL Campaign Report</footer>
+<footer>Prepared for <strong>{html.escape(brand)}</strong> · Instagram KOL Campaign Report</footer>
 <script>
   var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
 
@@ -1004,30 +1014,36 @@ def generate_html(reports):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", default=None, help="Legacy single CSV (canonical raw.csv format)")
-    parser.add_argument("--data-dir", default="./data", help="Directory of Foxtells campaign CSVs")
+    parser.add_argument(
+        "--input", default=None, help="Legacy single CSV (canonical raw.csv format)"
+    )
+    parser.add_argument(
+        "--data-dir", default="./data", help="Directory of Foxtells campaign CSVs"
+    )
     parser.add_argument("--output", default="./index.html")
+    parser.add_argument(
+        "--brand", default="ZUS Coffee", help="Full brand name (title/header/footer)"
+    )
+    parser.add_argument("--brand-short", default="ZUS", help="Short watermark word")
     args = parser.parse_args()
 
     reports = {}
 
     if args.input:
         path = Path(args.input)
-        campaign_id, campaign_name, rows = read_campaign_csv(path)
+        campaign_id, campaign_name, rows = read_campaign_csv(path, args.brand_short)
         reports[campaign_id] = build_report(rows, campaign_id, campaign_name)
     else:
-        campaigns = load_campaigns(args.data_dir)
+        campaigns = load_campaigns(args.data_dir, args.brand_short)
         if not campaigns:
             raise SystemExit(f"No CSV files found in {args.data_dir}")
         for cid, cdata in campaigns.items():
             if not cdata["rows"]:
                 print(f"Warning: no KOL rows in {cdata['name']} ({cid})")
-            reports[cid] = build_report(
-                cdata["rows"], cid, cdata["name"]
-            )
+            reports[cid] = build_report(cdata["rows"], cid, cdata["name"])
         reports["all"] = build_combined_report(campaigns)
 
-    output_html = generate_html(reports)
+    output_html = generate_html(reports, args.brand, args.brand_short)
     Path(args.output).write_text(output_html, encoding="utf-8")
     print(f"Generated report: {args.output}")
 

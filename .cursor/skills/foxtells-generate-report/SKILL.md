@@ -1,7 +1,7 @@
 ---
 name: foxtells-generate-report
 description: >-
-  Generate and update the ZUS Coffee KOL campaign HTML report from Foxtells
+  Generate and update a brand's KOL campaign HTML report from Foxtells
   CSVs in data/ or legacy raw.csv. Use when adding campaigns, regenerating
   index.html, fixing report stats, or working with generate_zus_kol_report.py,
   Foxtells exports, KOL metrics, or campaign switcher UI. Invoke as
@@ -11,23 +11,25 @@ disable-model-invocation: true
 
 # Foxtells generate report
 
-Project skill for the ZUS KOL static report in this repository. Read [AGENTS.md](../../../AGENTS.md) for full schema, column aliases, and combined-view rules.
+Project skill for the KOL static report in this repository. Read [AGENTS.md](../../../AGENTS.md) for full schema, column aliases, and combined-view rules.
+
+**If the user has not specified the brand name, ask for the full brand name and the short watermark word before running. Default to ZUS Coffee / ZUS only for this repo.**
 
 ## Quick start
 
 ```bash
-python3 generate_zus_kol_report.py --data-dir ./data --output ./index.html
+python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
 Open `index.html` in a browser. Use the campaign switcher for **All Campaigns** or a single campaign.
 
 ## Add a campaign
 
-1. Export from Foxtells and save as `data/ZUS - <name>.csv` (keep the Foxtells layout: metadata rows 1–5, header row with `NO.` in column A).
+1. Export from Foxtells and save as `data/<brand-short> - <name>.csv` (keep the Foxtells layout: metadata rows 1–5, header row with `NO.` in column A).
 2. Regenerate with the command above — new CSVs are picked up automatically.
 3. Do **not** hand-edit `index.html`; always regenerate.
 
-Campaign display name comes from the `Project` cell on the `In Process` row, else the filename stem (without `ZUS - `).
+Campaign display name comes from the `Project` cell on the `In Process` row, else the filename stem (without `<brand-short> - `).
 
 ## Constraints
 
@@ -41,7 +43,7 @@ Campaign display name comes from the `Project` cell on the `In Process` row, els
 Canonical `raw.csv` format (header on row 1, `List` + `IG - *` / `TT - *` columns):
 
 ```bash
-python3 generate_zus_kol_report.py --input ./raw.csv --output ./index.html
+python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
 ## Verification
@@ -49,7 +51,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --output ./index.html
 After `--data-dir`:
 
 ```bash
-python3 generate_zus_kol_report.py --data-dir ./data --output ./index.html
+python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
 Expect exit 0, per-campaign row counts printed, and in `index.html`:
