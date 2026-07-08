@@ -785,7 +785,191 @@ def render_panel(r: ReportPayload, brand: str) -> str:
 </div>"""
 
 
-def generate_html(reports, brand, brand_short):
+def _parse_hex(color: str) -> tuple[int, int, int]:
+    color = color.strip().lstrip("#")
+    if len(color) == 3:
+        color = "".join(ch * 2 for ch in color)
+    if len(color) != 6 or not re.fullmatch(r"[0-9a-fA-F]{6}", color):
+        raise ValueError(f"Invalid hex color: #{color}")
+    return tuple(int(color[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def _to_hex(rgb: tuple[int, int, int]) -> str:
+    return "#{:02X}{:02X}{:02X}".format(*rgb)
+
+
+def _mix_hex(a: str, b: str, t: float) -> str:
+    ra, ga, ba = _parse_hex(a)
+    rb, gb, bb = _parse_hex(b)
+    return _to_hex(
+        tuple(int(round(c1 + (c2 - c1) * t)) for c1, c2 in zip((ra, ga, ba), (rb, gb, bb)))
+    )
+
+
+def _rgba(hex_color: str, alpha: float) -> str:
+    r, g, b = _parse_hex(hex_color)
+    return f"rgba({r},{g},{b},{alpha})"
+
+
+def _rgb_to_hsl(r: int, g: int, b: int) -> tuple[float, float, float]:
+    r, g, b = r / 255, g / 255, b / 255
+    mx, mn = max(r, g, b), min(r, g, b)
+    lightness = (mx + mn) / 2
+    if mx == mn:
+        hue = saturation = 0.0
+    else:
+        delta = mx - mn
+        saturation = delta / (2 - mx - mn) if lightness > 0.5 else delta / (mx + mn)
+        if mx == r:
+            hue = ((g - b) / delta + (6 if g < b else 0)) / 6
+        elif mx == g:
+            hue = ((b - r) / delta + 2) / 6
+        else:
+            hue = ((r - g) / delta + 4) / 6
+    return hue * 360, saturation, lightness
+
+
+def _hsl_to_rgb(h: float, s: float, lightness: float) -> tuple[int, int, int]:
+    h = h % 360
+    c = (1 - abs(2 * lightness - 1)) * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = lightness - c / 2
+    if h < 60:
+        rp, gp, bp = c, x, 0
+    elif h < 120:
+        rp, gp, bp = x, c, 0
+    elif h < 180:
+        rp, gp, bp = 0, c, x
+    elif h < 240:
+        rp, gp, bp = 0, x, c
+    elif h < 300:
+        rp, gp, bp = x, 0, c
+    else:
+        rp, gp, bp = c, 0, x
+    return tuple(int(round((channel + m) * 255)) for channel in (rp, gp, bp))
+
+
+def _hsl_hex(h: float, s: float, lightness: float) -> str:
+    return _to_hex(_hsl_to_rgb(h, s, lightness))
+
+
+def _normalize_color(color: str) -> str:
+    normalized = color.strip()
+    if not normalized.startswith("#"):
+        normalized = f"#{normalized}"
+    return _to_hex(_parse_hex(normalized))
+
+
+DEFAULT_THEME = {
+    "primary": "#2F3F8F",
+    "primary_soft": "#4D5FB5",
+    "primary_pale": "#E8ECFF",
+    "bg": "#F6F8FF",
+    "ink": "#111C44",
+    "ink_muted": "#3D497E",
+    "ink_soft": "#6471A6",
+    "deep": "#1F2B66",
+    "reel": "#3752C8",
+    "reel_light": "#E8EDFF",
+    "post": "#2E3E8E",
+    "post_light": "#E3E9FF",
+    "tiktok": "#111111",
+    "tiktok_light": "#F1F1F1",
+    "header_accent": "#CBD5FF",
+    "stat_gradient_start": "#F2F5FF",
+    "stat_border": "#6F83E8",
+    "tooltip_btn_border": "#B8C4F8",
+    "tooltip_border": "#D6DFFF",
+    "table_active": "#24357E",
+    "tag_outstanding_bg": "#EEF2FF",
+    "tag_outstanding_fg": "#1F2B66",
+    "tag_above_bg": "#DFE6FF",
+    "tag_above_fg": "#22307A",
+    "tag_average_bg": "#F0F2FF",
+    "tag_average_fg": "#4D5FB5",
+    "tag_highly_bg": "#E5EAFF",
+    "tag_highly_fg": "#25358B",
+    "tag_engaging_bg": "#EAF0FF",
+    "tag_engaging_fg": "#2A3E9D",
+    "tag_moderate_bg": "#F0F2FF",
+    "tag_moderate_fg": "#4D5FB5",
+}
+
+
+def build_theme(color: str | None = None) -> dict[str, str]:
+    if not color:
+        return dict(DEFAULT_THEME)
+
+    base = _normalize_color(color)
+    r, g, b = _parse_hex(base)
+    hue, sat, light = _rgb_to_hsl(r, g, b)
+    sat = max(sat, 0.12)
+    light_brand = light >= 0.7
+    primary_l = 0.38 if light_brand else 0.28
+
+    primary = _hsl_hex(hue, min(sat * 0.85, 0.72), primary_l)
+    primary_soft = _hsl_hex(hue, min(sat * 0.75, 0.65), primary_l + 0.12)
+    if light_brand:
+        primary_pale = base
+        bg = _mix_hex(base, "#FFFFFF", 0.45)
+    else:
+        primary_pale = _mix_hex(base, "#FFFFFF", 0.82)
+        bg = _mix_hex(base, "#FFFFFF", 0.92)
+
+    deep = _hsl_hex(hue, min(sat * 0.8, 0.68), max(primary_l - 0.12, 0.16))
+    ink = _hsl_hex(hue, min(sat * 0.75, 0.65), max(primary_l - 0.18, 0.14))
+    ink_muted = _hsl_hex(hue, min(sat * 0.65, 0.58), primary_l - 0.02)
+    ink_soft = _hsl_hex(hue, min(sat * 0.5, 0.45), primary_l + 0.08)
+    post = _hsl_hex(hue, min(sat * 0.85, 0.7), primary_l - 0.04)
+    reel = _hsl_hex(hue, min(sat * 0.9, 0.75), primary_l + 0.06)
+    post_light = _mix_hex(post, "#FFFFFF", 0.88)
+    reel_light = _mix_hex(reel, "#FFFFFF", 0.88)
+    header_accent = _mix_hex(primary_soft, "#FFFFFF", 0.62)
+    stat_gradient_start = _mix_hex(primary_pale, "#FFFFFF", 0.35)
+    stat_border = primary_soft
+    tooltip_btn_border = _mix_hex(primary_soft, "#FFFFFF", 0.45)
+    tooltip_border = _mix_hex(primary_pale, "#FFFFFF", 0.2)
+    table_active = _hsl_hex(hue, min(sat * 0.9, 0.75), max(primary_l - 0.06, 0.2))
+
+    return {
+        "primary": primary,
+        "primary_soft": primary_soft,
+        "primary_pale": primary_pale,
+        "bg": bg,
+        "ink": ink,
+        "ink_muted": ink_muted,
+        "ink_soft": ink_soft,
+        "deep": deep,
+        "reel": reel,
+        "reel_light": reel_light,
+        "post": post,
+        "post_light": post_light,
+        "tiktok": DEFAULT_THEME["tiktok"],
+        "tiktok_light": DEFAULT_THEME["tiktok_light"],
+        "header_accent": header_accent,
+        "stat_gradient_start": stat_gradient_start,
+        "stat_border": stat_border,
+        "tooltip_btn_border": tooltip_btn_border,
+        "tooltip_border": tooltip_border,
+        "table_active": table_active,
+        "tag_outstanding_bg": _mix_hex(primary_pale, "#FFFFFF", 0.15),
+        "tag_outstanding_fg": deep,
+        "tag_above_bg": _mix_hex(primary_pale, primary_soft, 0.35),
+        "tag_above_fg": _hsl_hex(hue, min(sat * 0.8, 0.68), max(primary_l - 0.08, 0.2)),
+        "tag_average_bg": _mix_hex(primary_pale, "#FFFFFF", 0.25),
+        "tag_average_fg": primary_soft,
+        "tag_highly_bg": _mix_hex(primary_pale, primary_soft, 0.2),
+        "tag_highly_fg": _hsl_hex(hue, min(sat * 0.85, 0.72), max(primary_l - 0.04, 0.22)),
+        "tag_engaging_bg": _mix_hex(primary_pale, primary_soft, 0.28),
+        "tag_engaging_fg": _hsl_hex(hue, min(sat * 0.85, 0.72), max(primary_l, 0.26)),
+        "tag_moderate_bg": _mix_hex(primary_pale, "#FFFFFF", 0.25),
+        "tag_moderate_fg": primary_soft,
+    }
+
+
+def generate_html(reports, brand, brand_short, theme=None):
+    theme = theme or build_theme()
+    t = theme
     # Escape for use inside a CSS single-quoted string (watermark content:)
     brand_short_css = brand_short.replace("\\", "\\\\").replace("'", "\\'")
     switcher_items = []
@@ -818,15 +1002,15 @@ def generate_html(reports, brand, brand_short):
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {{
-    --zus-blue: #2F3F8F; --zus-blue-soft: #4D5FB5; --zus-blue-pale: #E8ECFF; --bg: #F6F8FF;
-    --ink: #111C44; --ink-muted: #3D497E; --ink-soft: #6471A6; --deep: #1F2B66;
-    --reel: #3752C8; --reel-light: #E8EDFF; --post: #2E3E8E; --post-light: #E3E9FF;
-    --tiktok: #111111; --tiktok-light: #F1F1F1;
-    --border: rgba(47,63,143,0.22); --shadow: 0 4px 28px rgba(31,43,102,0.12);
+    --zus-blue: {t["primary"]}; --zus-blue-soft: {t["primary_soft"]}; --zus-blue-pale: {t["primary_pale"]}; --bg: {t["bg"]};
+    --ink: {t["ink"]}; --ink-muted: {t["ink_muted"]}; --ink-soft: {t["ink_soft"]}; --deep: {t["deep"]};
+    --reel: {t["reel"]}; --reel-light: {t["reel_light"]}; --post: {t["post"]}; --post-light: {t["post_light"]};
+    --tiktok: {t["tiktok"]}; --tiktok-light: {t["tiktok_light"]};
+    --border: {_rgba(t["primary"], 0.22)}; --shadow: 0 4px 28px {_rgba(t["deep"], 0.12)};
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{ font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.6; }}
-  .campaign-bar {{ background: white; border-bottom: 1px solid var(--border); padding: 14px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(31,43,102,0.08); }}
+  .campaign-bar {{ background: white; border-bottom: 1px solid var(--border); padding: 14px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px {_rgba(t["deep"], 0.08)}; }}
   .campaign-bar-inner {{ max-width: 1100px; margin: 0 auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }}
   .campaign-bar-label {{ font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-soft); margin-right: 6px; }}
   .campaign-pill {{ border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }}
@@ -836,12 +1020,12 @@ def generate_html(reports, brand, brand_short):
   .campaign-panel.active {{ display: block; }}
   .report-header {{ background: var(--zus-blue); color: white; padding: 56px 64px 40px; position: relative; overflow: hidden; }}
   .report-header::after {{ content: '{brand_short_css}'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }}
-  .header-tag {{ font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #CBD5FF; margin-bottom: 14px; }}
+  .header-tag {{ font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: {t["header_accent"]}; margin-bottom: 14px; }}
   .header-title {{ font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }}
   .header-sub {{ font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.8); margin-bottom: 24px; }}
   .header-meta {{ display: flex; gap: 28px; flex-wrap: wrap; }}
   .meta-item {{ display: flex; flex-direction: column; gap: 2px; }}
-  .meta-label {{ font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #CBD5FF; font-weight: 600; }}
+  .meta-label {{ font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: {t["header_accent"]}; font-weight: 600; }}
   .meta-value {{ font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.92); }}
   .container {{ max-width: 1100px; margin: 0 auto; padding: 42px 30px; }}
   .section {{ margin-bottom: 48px; }}
@@ -851,9 +1035,9 @@ def generate_html(reports, brand, brand_short):
   .overview-grid-3 {{ grid-template-columns: repeat(3, 1fr); }}
   .stat-card {{ background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; box-shadow: var(--shadow); }}
   .stat-card-total {{
-    background: linear-gradient(135deg, #F2F5FF 0%, #FFFFFF 100%);
-    border: 2px solid #6F83E8;
-    box-shadow: 0 10px 30px rgba(47, 63, 143, 0.2);
+    background: linear-gradient(135deg, {t["stat_gradient_start"]} 0%, #FFFFFF 100%);
+    border: 2px solid {t["stat_border"]};
+    box-shadow: 0 10px 30px {_rgba(t["primary"], 0.2)};
     transform: translateY(-2px);
   }}
   .stat-num {{ font-family: 'Prompt', sans-serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }}
@@ -866,14 +1050,14 @@ def generate_html(reports, brand, brand_short):
   .badge-tiktok {{ background: var(--tiktok-light); color: var(--tiktok); }}
   .badge-total {{ background: var(--zus-blue-pale); color: var(--zus-blue); }}
   .mobile-tooltip-triggers {{ display: none; margin-top: 10px; gap: 8px; flex-wrap: wrap; }}
-  .mobile-tooltip-btn {{ border: 1px solid #B8C4F8; background: #fff; color: var(--zus-blue); border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }}
-  .mobile-tooltip {{ display: none; margin-top: 8px; background: #fff; border: 1px solid #D6DFFF; border-radius: 10px; padding: 10px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }}
+  .mobile-tooltip-btn {{ border: 1px solid {t["tooltip_btn_border"]}; background: #fff; color: var(--zus-blue); border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }}
+  .mobile-tooltip {{ display: none; margin-top: 8px; background: #fff; border: 1px solid {t["tooltip_border"]}; border-radius: 10px; padding: 10px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }}
   .mobile-tooltip.show {{ display: block; }}
   .compare-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }}
   .compare-card {{ border-radius: 14px; padding: 24px; border: 1.5px solid; background: white; }}
-  .compare-card.posts {{ border-color: rgba(46,62,142,0.36); }}
-  .compare-card.reels {{ border-color: rgba(55,82,200,0.36); }}
-  .compare-card.tiktok {{ border-color: rgba(17,17,17,0.24); }}
+  .compare-card.posts {{ border-color: {_rgba(t["post"], 0.36)}; }}
+  .compare-card.reels {{ border-color: {_rgba(t["reel"], 0.36)}; }}
+  .compare-card.tiktok {{ border-color: {_rgba(t["tiktok"], 0.24)}; }}
   .compare-title {{ display: inline-flex; align-items: center; gap: 6px; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }}
   .compare-row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }}
   .compare-row:last-child {{ border: none; }}
@@ -899,18 +1083,18 @@ def generate_html(reports, brand, brand_short):
   th {{ padding: 11px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center; white-space: nowrap; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ background: var(--zus-blue-soft); }}
-  th.sortable.active {{ background: #24357E; }}
+  th.sortable.active {{ background: {t["table_active"]}; }}
   th:first-child, td:first-child {{ text-align: left; padding-left: 16px; }}
-  tbody tr {{ border-bottom: 1px solid rgba(47,63,143,0.1); }}
+  tbody tr {{ border-bottom: 1px solid {_rgba(t["primary"], 0.1)}; }}
   td {{ padding: 10px 10px; font-size: 12.5px; text-align: center; color: var(--ink-muted); }}
   td.num {{ font-family: 'Prompt', sans-serif; font-weight: 700; color: var(--deep); }}
   td.er {{ font-weight: 700; color: var(--deep); }}
   td a {{ color: var(--zus-blue); text-decoration: none; font-weight: 600; }}
   td a:hover {{ text-decoration: underline; }}
   .tag {{ display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }}
-  .tag-outstanding {{ background: #EEF2FF; color: #1F2B66; }} .tag-above {{ background: #DFE6FF; color: #22307A; }} .tag-average {{ background: #F0F2FF; color: #4D5FB5; }}
-  .tag-below {{ background: #FFF0E8; color: #A24E1E; }} .tag-under {{ background: #FCE4E4; color: #8B1010; }} .tag-highly {{ background: #E5EAFF; color: #25358B; }}
-  .tag-engaging {{ background: #EAF0FF; color: #2A3E9D; }} .tag-moderate {{ background: #F0F2FF; color: #4D5FB5; }} .tag-low {{ background: #FFF0E8; color: #A24E1E; }} .tag-minimal {{ background: #FCE4E4; color: #8B1010; }}
+  .tag-outstanding {{ background: {t["tag_outstanding_bg"]}; color: {t["tag_outstanding_fg"]}; }} .tag-above {{ background: {t["tag_above_bg"]}; color: {t["tag_above_fg"]}; }} .tag-average {{ background: {t["tag_average_bg"]}; color: {t["tag_average_fg"]}; }}
+  .tag-below {{ background: #FFF0E8; color: #A24E1E; }} .tag-under {{ background: #FCE4E4; color: #8B1010; }} .tag-highly {{ background: {t["tag_highly_bg"]}; color: {t["tag_highly_fg"]}; }}
+  .tag-engaging {{ background: {t["tag_engaging_bg"]}; color: {t["tag_engaging_fg"]}; }} .tag-moderate {{ background: {t["tag_moderate_bg"]}; color: {t["tag_moderate_fg"]}; }} .tag-low {{ background: #FFF0E8; color: #A24E1E; }} .tag-minimal {{ background: #FCE4E4; color: #8B1010; }}
   .appendix-note {{ background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }}
   .table-tabs {{ display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }}
   .table-panel-title {{ display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; font-weight: 700; }}
@@ -1069,7 +1253,17 @@ def main():
         "--brand", default="ZUS Coffee", help="Full brand name (title/header/footer)"
     )
     parser.add_argument("--brand-short", default="ZUS", help="Short watermark word")
+    parser.add_argument(
+        "--color",
+        default=None,
+        help="Brand hex color (e.g. #eec8cb). Default: blue theme.",
+    )
     args = parser.parse_args()
+
+    try:
+        theme = build_theme(args.color)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     reports = {}
 
@@ -1087,7 +1281,7 @@ def main():
             reports[cid] = build_report(cdata["rows"], cid, cdata["name"])
         reports["all"] = build_combined_report(campaigns)
 
-    output_html = generate_html(reports, args.brand, args.brand_short)
+    output_html = generate_html(reports, args.brand, args.brand_short, theme)
     Path(args.output).write_text(output_html, encoding="utf-8")
     print(f"Generated report: {args.output}")
 

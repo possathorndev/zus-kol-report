@@ -14,7 +14,7 @@ python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --bran
 python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
-`--brand` sets the full name in title, header, and footer (default: `ZUS Coffee`). `--brand-short` sets the header watermark and the filename prefix stripped for campaign names (default: `ZUS`, so `ZUS - Foo.csv` → campaign name `Foo`).
+`--brand` sets the full name in title, header, and footer (default: `ZUS Coffee`). `--brand-short` sets the header watermark and the filename prefix stripped for campaign names (default: `ZUS`, so `ZUS - Foo.csv` → campaign name `Foo`). `--color` sets an optional brand hex (e.g. `#eec8cb`); omit for the default blue theme. A custom color derives the full palette (backgrounds, ink, tags, platform tints); header/footer use a darkened variant for white text.
 
 `index.html` is generated output — do not hand-edit; regenerate with the script.
 
