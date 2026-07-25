@@ -15,7 +15,15 @@ Project skill for the KOL static report in this repository. Read [AGENTS.md](../
 
 **If the user has not specified the brand name, ask for the full brand name and the short watermark word before running. Default to ZUS Coffee / ZUS only for this repo.**
 
-**If the user has not specified a brand color, ask whether they want the default blue theme or a custom hex (e.g. `#eec8cb`). Pass it with `--color` when regenerating.**
+**If the user has not specified a brand color:** look up **Known brands** below (and in AGENTS.md). Use the stored hex with `--color` when the brand matches. Only ask for default blue vs custom hex when the brand is unknown.
+
+## Known brands
+
+| Brand | `--brand` | `--brand-short` | `--color` |
+|-------|-----------|-----------------|-----------|
+| ZUS Coffee | `ZUS Coffee` | `ZUS` | _(omit — default blue)_ |
+| Molly Tea | `Molly Tea` | `MollyTea` | `#eec8cb` |
+| Yonny | `Yonny` | `Yonny` | `#D75E28` |
 
 ## Quick start
 
@@ -23,7 +31,13 @@ Project skill for the KOL static report in this repository. Read [AGENTS.md](../
 python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
-Custom brand color (full theme derived from the hex; header/footer auto-darkened for contrast):
+Custom brand color (full theme derived from the hex; mid/dark brands keep the hex as primary; pale brands darken header/footer for white text):
+
+```bash
+python3 generate_zus_kol_report.py --data-dir ./data --brand "Yonny" --brand-short "Yonny" --color "#D75E28" --output ./index.html
+```
+
+Molly Tea example:
 
 ```bash
 python3 generate_zus_kol_report.py --data-dir ./data --brand "Molly Tea" --brand-short "MollyTea" --color "#eec8cb" --output ./index.html
@@ -45,7 +59,7 @@ Campaign display name comes from the `Project` cell on the `In Process` row, els
 - Foxtells `Reels - *` / `Tiktok - *` columns map to canonical IG Reels / TT names (see AGENTS.md).
 - **Combined view**: same KOL in multiple campaigns = **separate table rows** with a Campaign column — never merge by username.
 - Post tab/sections hide automatically when a view has no post view data.
-- **Brand color**: optional `--color "#RRGGBB"`. Omit for default blue. Custom hex derives the full palette; header/footer use a darkened variant for white text.
+- **Brand color**: optional `--color "#RRGGBB"`. Omit for default blue. Use **Known brands** when the brand is listed; otherwise ask. Custom hex derives the full palette; mid/dark brands keep the hex as primary; pale brands darken header/footer for white text.
 
 ## Legacy single file
 

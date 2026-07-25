@@ -14,7 +14,15 @@ python3 generate_zus_kol_report.py --data-dir ./data --brand "ZUS Coffee" --bran
 python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --brand-short "ZUS" --output ./index.html
 ```
 
-`--brand` sets the full name in title, header, and footer (default: `ZUS Coffee`). `--brand-short` sets the header watermark and the filename prefix stripped for campaign names (default: `ZUS`, so `ZUS - Foo.csv` → campaign name `Foo`). `--color` sets an optional brand hex (e.g. `#eec8cb`); omit for the default blue theme. A custom color derives the full palette (backgrounds, ink, tags, platform tints); header/footer use a darkened variant for white text.
+`--brand` sets the full name in title, header, and footer (default: `ZUS Coffee`). `--brand-short` sets the header watermark and the filename prefix stripped for campaign names (default: `ZUS`, so `ZUS - Foo.csv` → campaign name `Foo`). `--color` sets an optional brand hex (e.g. `#eec8cb`); omit for the default blue theme. A custom color derives the full palette (backgrounds, ink, tags, platform tints); mid/dark brands keep the hex as primary; pale brands darken header/footer for white text.
+
+## Known brands
+
+| Brand | `--brand` | `--brand-short` | `--color` |
+|-------|-----------|-----------------|-----------|
+| ZUS Coffee | `ZUS Coffee` | `ZUS` | _(omit — default blue)_ |
+| Molly Tea | `Molly Tea` | `MollyTea` | `#eec8cb` |
+| Yonny | `Yonny` | `Yonny` | `#D75E28` |
 
 `index.html` is generated output — do not hand-edit; regenerate with the script.
 
