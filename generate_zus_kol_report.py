@@ -905,23 +905,29 @@ def build_theme(color: str | None = None) -> dict[str, str]:
     hue, sat, light = _rgb_to_hsl(r, g, b)
     sat = max(sat, 0.12)
     light_brand = light >= 0.7
-    primary_l = 0.38 if light_brand else 0.28
 
-    primary = _hsl_hex(hue, min(sat * 0.85, 0.72), primary_l)
-    primary_soft = _hsl_hex(hue, min(sat * 0.75, 0.65), primary_l + 0.12)
     if light_brand:
+        # Pale brands (e.g. #eec8cb): darken primary for white text on header/footer.
+        primary_l = 0.38
+        primary = _hsl_hex(hue, min(sat * 0.85, 0.72), primary_l)
+        primary_soft = _hsl_hex(hue, min(sat * 0.75, 0.65), primary_l + 0.12)
         primary_pale = base
         bg = _mix_hex(base, "#FFFFFF", 0.45)
     else:
+        # Mid/dark brands: keep the exact brand hex as primary (pills, header, tables).
+        primary = base
+        primary_l = light
+        primary_soft = _mix_hex(base, "#FFFFFF", 0.28)
         primary_pale = _mix_hex(base, "#FFFFFF", 0.82)
         bg = _mix_hex(base, "#FFFFFF", 0.92)
 
-    deep = _hsl_hex(hue, min(sat * 0.8, 0.68), max(primary_l - 0.12, 0.16))
-    ink = _hsl_hex(hue, min(sat * 0.75, 0.65), max(primary_l - 0.18, 0.14))
-    ink_muted = _hsl_hex(hue, min(sat * 0.65, 0.58), primary_l - 0.02)
-    ink_soft = _hsl_hex(hue, min(sat * 0.5, 0.45), primary_l + 0.08)
-    post = _hsl_hex(hue, min(sat * 0.85, 0.7), primary_l - 0.04)
-    reel = _hsl_hex(hue, min(sat * 0.9, 0.75), primary_l + 0.06)
+    text_l = min(primary_l, 0.32)
+    deep = _hsl_hex(hue, min(sat * 0.8, 0.68), max(text_l - 0.12, 0.16))
+    ink = _hsl_hex(hue, min(sat * 0.75, 0.65), max(text_l - 0.18, 0.14))
+    ink_muted = _hsl_hex(hue, min(sat * 0.65, 0.58), max(text_l - 0.02, 0.22))
+    ink_soft = _hsl_hex(hue, min(sat * 0.5, 0.45), max(text_l + 0.08, 0.28))
+    post = _hsl_hex(hue, min(sat * 0.85, 0.7), max(text_l - 0.04, 0.2))
+    reel = _hsl_hex(hue, min(sat * 0.9, 0.75), max(text_l + 0.06, 0.26))
     post_light = _mix_hex(post, "#FFFFFF", 0.88)
     reel_light = _mix_hex(reel, "#FFFFFF", 0.88)
     header_accent = _mix_hex(primary_soft, "#FFFFFF", 0.62)
@@ -929,7 +935,7 @@ def build_theme(color: str | None = None) -> dict[str, str]:
     stat_border = primary_soft
     tooltip_btn_border = _mix_hex(primary_soft, "#FFFFFF", 0.45)
     tooltip_border = _mix_hex(primary_pale, "#FFFFFF", 0.2)
-    table_active = _hsl_hex(hue, min(sat * 0.9, 0.75), max(primary_l - 0.06, 0.2))
+    table_active = _mix_hex(primary, "#000000", 0.18)
 
     return {
         "primary": primary,
