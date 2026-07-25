@@ -44,6 +44,8 @@ CANONICAL_COLUMNS = (
 FOXTELLS_ALIASES = {
     "List": "List",
     "Tiktok Channel": "List",
+    # Some Foxtells/Sheets exports lose names for cols 1–16 → Column 1/2/3 = NO./Status/List
+    "Column 3": "List",
     "Reels - View": "IG - View (Reels)",
     "Reels - Like": "IG - Like (Reels)",
     "Reels - Comment": "IG - Comment (Reels)",
@@ -171,11 +173,18 @@ def tag_er(v, mean, sd):
 
 def find_header_row(raw_rows):
     for i, row in enumerate(raw_rows):
-        if row and (row[0] or "").strip().upper() == "NO.":
+        if not row:
+            continue
+        first = (row[0] or "").strip().upper()
+        if first == "NO.":
+            return i
+        cells = {(c or "").strip() for c in row}
+        # Foxtells metric header (incl. Sheets exports where A1 is "Column 1")
+        if "Tiktok - View" in cells or "Reels - View" in cells:
             return i
     if raw_rows and (raw_rows[0][0] or "").strip() == "List":
         return 0
-    raise ValueError("Could not find header row (expected NO. or List)")
+    raise ValueError("Could not find header row (expected NO., List, or Foxtells metrics)")
 
 
 def normalize_row(row_dict):

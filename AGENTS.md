@@ -33,7 +33,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 ## Foxtells format (`data/*.csv`)
 
 - Rows 1–5 are metadata — skipped
-- **Header row**: first row where column A is `NO.` (usually line 6)
+- **Header row**: first row where column A is `NO.`, or any row containing `Tiktok - View` / `Reels - View` (Sheets exports may use `Column 1` in A)
 - **Campaign name**: `Project` on the `In Process` row; else filename stem with `<brand-short> - ` removed (default prefix: `ZUS - `)
 - **Campaign id**: slugified filename stem (e.g. `ZUS - 5.5.csv` → `zus-5-5`)
 
@@ -41,7 +41,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 
 | Foxtells | Canonical |
 |----------|-----------|
-| `List` | `List` |
+| `List` (or `Column 3` when names are lost) | `List` |
 | `Reels - View` … `Reels - Save` | `IG - View` … `IG - Save (Reels)` |
 | `Tiktok - View` … `Tiktok - Share` | `TT - View` … `TT - Share` |
 
