@@ -41,8 +41,8 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 ## Foxtells format (`data/*.csv`)
 
 - Rows 1–5 are metadata — skipped
-- **Header row**: first row where column A is `NO.`, or any row containing `Tiktok - View` / `Reels - View` (Sheets exports may use `Column 1` in A)
-- **Campaign name**: `Project` on the `In Process` row; else filename stem with `<brand-short> - ` removed (default prefix: `ZUS - `)
+- **Header row**: first row where column A is `NO.`, or any row containing `Tiktok - View` / `Reels - View` / `TikTok Views` / `Reels Views` (Sheets exports may use `Column 1` in A)
+- **Campaign name**: `Project` on the `In Process` row; else filename stem with `<brand-short> - ` removed (default prefix: `ZUS - `). If the filename contains `Phase N`, that is appended (e.g. `ZUS x Foo — Phase 1`) so multi-phase exports stay distinct.
 - **Campaign id**: slugified filename stem (e.g. `ZUS - 5.5.csv` → `zus-5-5`)
 
 ### Column aliases (Foxtells → canonical)
@@ -51,17 +51,19 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 |----------|-----------|
 | `List` (or `Column 3` when names are lost) | `List` |
 | `Reels - View` … `Reels - Save` | `IG - View` … `IG - Save (Reels)` |
+| `Reels Views` … `Reels Saves` (no dash) | same as above |
 | `Tiktok - View` … `Tiktok - Share` | `TT - View` … `TT - Share` |
+| `TikTok Views` … `TikTok Saves` (no dash) | same as above |
 
 No Post columns in Foxtells exports — Post tab/sections are hidden when a view has no post data.
 
-All other columns (Status, Link, Follower, drafts, etc.) are ignored.
+`Status` is used only for cross-campaign dedupe: if the same username appears in more than one CSV, blank/`cancel` rows are dropped; if any copy is `Done`, non-Done copies (e.g. re-schedule, In Process) are dropped too. Link, Follower, drafts, Caption, etc. are ignored.
 
 ## Combined view (`All Campaigns`)
 
 - Overview, compare, highlights, and benchmarks: pooled across **all** KOL rows from every campaign
 - KOL tables: rows concatenated from all campaigns; **Campaign** is the first column
-- Same username in multiple campaigns = **separate rows** (not merged)
+- Same username in multiple campaigns = **separate rows** (not merged), except blank/`cancel` (and non-Done when a Done copy exists) duplicates are dropped as above
 
 ## HTML output
 

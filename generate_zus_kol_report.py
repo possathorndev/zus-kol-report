@@ -4,6 +4,7 @@ import csv
 import html
 import re
 import statistics
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -52,11 +53,22 @@ FOXTELLS_ALIASES = {
     "Reels - Share": "IG - Share (Reels)",
     "Reels - Repost": "IG - Repost (Reels)",
     "Reels - Save": "IG - Save (Reels)",
+    # Alternate Foxtells/Sheets headers (no dash)
+    "Reels Views": "IG - View (Reels)",
+    "Reels Likes": "IG - Like (Reels)",
+    "Reels Comments": "IG - Comment (Reels)",
+    "Reels Shares": "IG - Share (Reels)",
+    "Reels Saves": "IG - Save (Reels)",
     "Tiktok - View": "TT - View",
     "Tiktok - Like": "TT - Like",
     "Tiktok - Comment": "TT - Comment",
     "Tiktok - Share": "TT - Share",
     "Tiktok - Save": "TT - Save",
+    "TikTok Views": "TT - View",
+    "TikTok Likes": "TT - Like",
+    "TikTok Comments": "TT - Comment",
+    "TikTok Shares": "TT - Share",
+    "TikTok Saves": "TT - Save",
 }
 
 ALL_KEYS = ["views", "likes", "comments", "shares", "reposts", "saves"]
@@ -180,7 +192,12 @@ def find_header_row(raw_rows):
             return i
         cells = {(c or "").strip() for c in row}
         # Foxtells metric header (incl. Sheets exports where A1 is "Column 1")
-        if "Tiktok - View" in cells or "Reels - View" in cells:
+        if cells & {
+            "Tiktok - View",
+            "Reels - View",
+            "TikTok Views",
+            "Reels Views",
+        }:
             return i
     if raw_rows and (raw_rows[0][0] or "").strip() == "List":
         return 0
@@ -201,19 +218,21 @@ def normalize_row(row_dict):
 
 
 def extract_campaign_name(raw_rows, path, brand_short):
+    stem = path.stem
+    phase_m = re.search(r"(Phase\s*\d+)", stem, re.I)
+    phase_suffix = f" — {phase_m.group(1)}" if phase_m else ""
     for row in raw_rows[:6]:
         if row and (row[0] or "").strip() == "In Process" and len(row) > 1:
             name = (row[1] or "").strip()
             if name:
-                return name
-    stem = path.stem
+                return f"{name}{phase_suffix}" if phase_suffix else name
     prefix = f"{brand_short} - "
     if stem.startswith(prefix):
         return stem[len(prefix) :]
     return stem
 
 
-def parse_kol_row(normalized, row_num):
+def parse_kol_row(normalized, row_num, status=""):
     username_raw = (normalized.get("List") or "").strip()
     if not username_raw:
         return None
@@ -275,6 +294,7 @@ def parse_kol_row(normalized, row_num):
     return {
         "row": row_num,
         "username": username,
+        "status": (status or "").strip(),
         "has_post": has_post,
         "has_reels": has_reels,
         "has_tiktok": has_tiktok,
@@ -285,6 +305,51 @@ def parse_kol_row(normalized, row_num):
         "reels_er": reels_er,
         "tiktok_er": tiktok_er,
     }
+
+
+def is_blank_or_cancel_status(status):
+    s = (status or "").strip().lower()
+    return s == "" or s == "cancel"
+
+
+def is_done_status(status):
+    return (status or "").strip().lower() == "done"
+
+
+def drop_blank_cancel_duplicates(campaigns):
+    """Resolve cross-campaign username duplicates for reporting.
+
+    - Always drop blank/`cancel` copies when the username appears elsewhere.
+    - If any copy is `Done`, also drop non-Done copies (e.g. re-schedule,
+      In Process) so calculations use the completed row.
+    """
+    by_user = defaultdict(list)
+    for cid, cdata in campaigns.items():
+        for idx, r in enumerate(cdata["rows"]):
+            by_user[r["username"].lower()].append((cid, idx, r))
+
+    drop_keys = set()  # (cid, idx)
+    for entries in by_user.values():
+        if len(entries) < 2:
+            continue
+        has_done = any(is_done_status(r.get("status")) for _, _, r in entries)
+        for cid, idx, r in entries:
+            status = r.get("status")
+            if is_blank_or_cancel_status(status):
+                drop_keys.add((cid, idx))
+            elif has_done and not is_done_status(status):
+                drop_keys.add((cid, idx))
+
+    removed = 0
+    for cid, cdata in campaigns.items():
+        kept = []
+        for idx, r in enumerate(cdata["rows"]):
+            if (cid, idx) in drop_keys:
+                removed += 1
+                continue
+            kept.append(r)
+        cdata["rows"] = kept
+    return removed
 
 
 def read_campaign_csv(path, brand_short="ZUS"):
@@ -304,7 +369,8 @@ def read_campaign_csv(path, brand_short="ZUS"):
         padded = raw + [""] * max(0, len(headers) - len(raw))
         row_dict = dict(zip(headers, padded))
         normalized = normalize_row(row_dict)
-        parsed = parse_kol_row(normalized, line_no)
+        status = row_dict.get("Status") or ""
+        parsed = parse_kol_row(normalized, line_no, status=status)
         if parsed:
             rows.append(parsed)
 
@@ -321,6 +387,12 @@ def load_campaigns(data_dir, brand_short="ZUS"):
             "name": campaign_name,
             "rows": rows,
         }
+    removed = drop_blank_cancel_duplicates(campaigns)
+    if removed:
+        print(
+            f"Dropped {removed} duplicate KOL row(s) "
+            f"(blank/cancel, or non-Done when Done exists)"
+        )
     return campaigns
 
 
