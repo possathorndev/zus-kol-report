@@ -219,6 +219,10 @@ def normalize_row(row_dict):
 
 def extract_campaign_name(raw_rows, path, brand_short):
     stem = path.stem
+    prefix = f"{brand_short} - "
+    # Prefer "<brand-short> - <name>" filename — Project can repeat across exports.
+    if stem.startswith(prefix):
+        return stem[len(prefix) :]
     phase_m = re.search(r"(Phase\s*\d+)", stem, re.I)
     phase_suffix = f" — {phase_m.group(1)}" if phase_m else ""
     for row in raw_rows[:6]:
@@ -226,9 +230,6 @@ def extract_campaign_name(raw_rows, path, brand_short):
             name = (row[1] or "").strip()
             if name:
                 return f"{name}{phase_suffix}" if phase_suffix else name
-    prefix = f"{brand_short} - "
-    if stem.startswith(prefix):
-        return stem[len(prefix) :]
     return stem
 
 
@@ -369,7 +370,8 @@ def read_campaign_csv(path, brand_short="ZUS"):
         padded = raw + [""] * max(0, len(headers) - len(raw))
         row_dict = dict(zip(headers, padded))
         normalized = normalize_row(row_dict)
-        status = row_dict.get("Status") or ""
+        # Sheets exports often rename Status → Column 2 when headers are lost
+        status = row_dict.get("Status") or row_dict.get("Column 2") or ""
         parsed = parse_kol_row(normalized, line_no, status=status)
         if parsed:
             rows.append(parsed)
@@ -1362,10 +1364,14 @@ def main():
         campaigns = load_campaigns(args.data_dir, args.brand_short)
         if not campaigns:
             raise SystemExit(f"No CSV files found in {args.data_dir}")
-        for cid, cdata in campaigns.items():
+        for cid, cdata in list(campaigns.items()):
             if not cdata["rows"]:
-                print(f"Warning: no KOL rows in {cdata['name']} ({cid})")
+                print(f"Warning: no KOL rows in {cdata['name']} ({cid}) — skipped")
+                del campaigns[cid]
+                continue
             reports[cid] = build_report(cdata["rows"], cid, cdata["name"])
+        if not campaigns:
+            raise SystemExit("No campaigns with KOL rows after loading/dedupe")
         reports["all"] = build_combined_report(campaigns)
 
     output_html = generate_html(reports, args.brand, args.brand_short, theme)

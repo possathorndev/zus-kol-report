@@ -42,7 +42,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 
 - Rows 1–5 are metadata — skipped
 - **Header row**: first row where column A is `NO.`, or any row containing `Tiktok - View` / `Reels - View` / `TikTok Views` / `Reels Views` (Sheets exports may use `Column 1` in A)
-- **Campaign name**: `Project` on the `In Process` row; else filename stem with `<brand-short> - ` removed (default prefix: `ZUS - `). If the filename contains `Phase N`, that is appended (e.g. `ZUS x Foo — Phase 1`) so multi-phase exports stay distinct.
+- **Campaign name**: filename stem with `<brand-short> - ` removed when present (e.g. `Yonny - Platinum Pop 0626.csv` → `Platinum Pop 0626`); else `Project` on the `In Process` row, with `Phase N` from the filename appended when present; else the full stem.
 - **Campaign id**: slugified filename stem (e.g. `ZUS - 5.5.csv` → `zus-5-5`)
 
 ### Column aliases (Foxtells → canonical)
@@ -50,6 +50,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 | Foxtells | Canonical |
 |----------|-----------|
 | `List` (or `Column 3` when names are lost) | `List` |
+| `Status` (or `Column 2` when names are lost) | status (dedupe only) |
 | `Reels - View` … `Reels - Save` | `IG - View` … `IG - Save (Reels)` |
 | `Reels Views` … `Reels Saves` (no dash) | same as above |
 | `Tiktok - View` … `Tiktok - Share` | `TT - View` … `TT - Share` |
