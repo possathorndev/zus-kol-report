@@ -57,6 +57,7 @@ Campaign display name comes from the `Project` cell on the `In Process` row, els
 
 - Only metric columns matter; ignore Status, Link, Follower, drafts, Caption, etc.
 - Foxtells `Reels - *` / `Tiktok - *` columns map to canonical IG Reels / TT names (see AGENTS.md).
+- **Reach** (`Tiktok - Reach` / `Reels - Reach`) is optional: shown in tables, compare, overview, and highlights when present; hidden when a view has no reach data. ER still uses views.
 - **Combined view**: same KOL in multiple campaigns = **separate table rows** with a Campaign column — never merge by username.
 - Post tab/sections hide automatically when a view has no post view data.
 - **Brand color**: optional `--color "#RRGGBB"`. Omit for default blue. Use **Known brands** when the brand is listed; otherwise ask. Custom hex derives the full palette; mid/dark brands keep the hex as primary; pale brands darken header/footer for white text.

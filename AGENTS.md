@@ -31,12 +31,13 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 | Field | Column |
 |-------|--------|
 | KOL username | `List` (@ stripped, empty rows skipped) |
-| IG Post | `IG - View/Like/Comment/Share/Repost/Save (Post)` — optional |
-| IG Reels | `IG - View/Like/Comment/Share/Repost/Save (Reels)` |
-| TikTok | `TT - View/Like/Comment/Share/Save` (repost always 0) |
+| IG Post | `IG - View/Reach/Like/Comment/Share/Repost/Save (Post)` — optional |
+| IG Reels | `IG - View/Reach/Like/Comment/Share/Repost/Save (Reels)` |
+| TikTok | `TT - View/Reach/Like/Comment/Share/Save` (repost always 0) |
 
 - **parse_num**: strip commas; non-digit → missing
 - **ER**: `(likes + comments + shares + saves) / views × 100`
+- **Reach**: optional Foxtells metric (unique accounts). Hidden in a view when no row has reach data; ER still uses views.
 
 ## Foxtells format (`data/*.csv`)
 
@@ -52,9 +53,13 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 | `List` (or `Column 3` when names are lost) | `List` |
 | `Status` (or `Column 2` when names are lost) | status (dedupe only) |
 | `Reels - View` … `Reels - Save` | `IG - View` … `IG - Save (Reels)` |
+| `Reels - Reach` | `IG - Reach (Reels)` |
 | `Reels Views` … `Reels Saves` (no dash) | same as above |
+| `Reels Reach` | same as `Reels - Reach` |
 | `Tiktok - View` … `Tiktok - Share` | `TT - View` … `TT - Share` |
+| `Tiktok - Reach` | `TT - Reach` |
 | `TikTok Views` … `TikTok Saves` (no dash) | same as above |
+| `TikTok Reach` | same as `Tiktok - Reach` |
 
 No Post columns in Foxtells exports — Post tab/sections are hidden when a view has no post data.
 

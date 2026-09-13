@@ -10,6 +10,7 @@ from pathlib import Path
 
 POST_COLS = {
     "views": "IG - View (Post)",
+    "reach": "IG - Reach (Post)",
     "likes": "IG - Like (Post)",
     "comments": "IG - Comment (Post)",
     "shares": "IG - Share (Post)",
@@ -19,6 +20,7 @@ POST_COLS = {
 
 REEL_COLS = {
     "views": "IG - View (Reels)",
+    "reach": "IG - Reach (Reels)",
     "likes": "IG - Like (Reels)",
     "comments": "IG - Comment (Reels)",
     "shares": "IG - Share (Reels)",
@@ -28,6 +30,7 @@ REEL_COLS = {
 
 TIKTOK_COLS = {
     "views": "TT - View",
+    "reach": "TT - Reach",
     "likes": "TT - Like",
     "comments": "TT - Comment",
     "shares": "TT - Share",
@@ -48,6 +51,7 @@ FOXTELLS_ALIASES = {
     # Some Foxtells/Sheets exports lose names for cols 1–16 → Column 1/2/3 = NO./Status/List
     "Column 3": "List",
     "Reels - View": "IG - View (Reels)",
+    "Reels - Reach": "IG - Reach (Reels)",
     "Reels - Like": "IG - Like (Reels)",
     "Reels - Comment": "IG - Comment (Reels)",
     "Reels - Share": "IG - Share (Reels)",
@@ -55,23 +59,31 @@ FOXTELLS_ALIASES = {
     "Reels - Save": "IG - Save (Reels)",
     # Alternate Foxtells/Sheets headers (no dash)
     "Reels Views": "IG - View (Reels)",
+    "Reels Reach": "IG - Reach (Reels)",
     "Reels Likes": "IG - Like (Reels)",
     "Reels Comments": "IG - Comment (Reels)",
     "Reels Shares": "IG - Share (Reels)",
     "Reels Saves": "IG - Save (Reels)",
     "Tiktok - View": "TT - View",
+    "Tiktok - Reach": "TT - Reach",
     "Tiktok - Like": "TT - Like",
     "Tiktok - Comment": "TT - Comment",
     "Tiktok - Share": "TT - Share",
     "Tiktok - Save": "TT - Save",
     "TikTok Views": "TT - View",
+    "TikTok Reach": "TT - Reach",
     "TikTok Likes": "TT - Like",
     "TikTok Comments": "TT - Comment",
     "TikTok Shares": "TT - Share",
     "TikTok Saves": "TT - Save",
 }
 
-ALL_KEYS = ["views", "likes", "comments", "shares", "reposts", "saves"]
+ALL_KEYS = ["views", "reach", "likes", "comments", "shares", "reposts", "saves"]
+REACH_HAS_KEY = {
+    "post": "has_post_reach",
+    "reels": "has_reels_reach",
+    "tiktok": "has_tiktok_reach",
+}
 
 
 @dataclass
@@ -83,6 +95,9 @@ class ReportPayload:
     reels_kols: int
     tiktok_kols: int
     has_post_data: bool
+    has_post_reach_data: bool
+    has_reels_reach_data: bool
+    has_tiktok_reach_data: bool
     show_campaign_column: bool
     pt: dict
     rt: dict
@@ -94,6 +109,9 @@ class ReportPayload:
     post_avg_views: float
     reels_avg_views: float
     tiktok_avg_views: float
+    post_avg_reach: float
+    reels_avg_reach: float
+    tiktok_avg_reach: float
     post_avg_er: float
     reels_avg_er: float
     tiktok_avg_er: float
@@ -102,28 +120,37 @@ class ReportPayload:
     reach_pct: float
     er_winner: str
     post_top_views: list
+    post_top_reach: list
     post_top_comments: list
     post_top_saves: list
     reels_top_views: list
+    reels_top_reach: list
     reels_top_comments: list
     reels_top_saves: list
     tiktok_top_views: list
+    tiktok_top_reach: list
     tiktok_top_comments: list
     tiktok_top_saves: list
     post_rows: list
     reels_rows: list
     tiktok_rows: list
     post_views_mean: float
+    post_reach_mean: float
     post_er_mean: float
     post_views_sd: float
+    post_reach_sd: float
     post_er_sd: float
     reels_views_mean: float
+    reels_reach_mean: float
     reels_er_mean: float
     reels_views_sd: float
+    reels_reach_sd: float
     reels_er_sd: float
     tiktok_views_mean: float
+    tiktok_reach_mean: float
     tiktok_er_mean: float
     tiktok_views_sd: float
+    tiktok_reach_sd: float
     tiktok_er_sd: float
 
 
@@ -138,6 +165,8 @@ def slugify(text):
 
 
 def nfmt(v):
+    if v is None:
+        return "—"
     return f"{v:,}"
 
 
@@ -245,6 +274,9 @@ def parse_kol_row(normalized, row_num, status=""):
     has_post = post_views is not None
     has_reels = reels_views is not None
     has_tiktok = tiktok_views is not None
+    has_post_reach = parse_num(normalized.get(POST_COLS["reach"])) is not None
+    has_reels_reach = parse_num(normalized.get(REEL_COLS["reach"])) is not None
+    has_tiktok_reach = parse_num(normalized.get(TIKTOK_COLS["reach"])) is not None
 
     post = {}
     reels = {}
@@ -299,6 +331,9 @@ def parse_kol_row(normalized, row_num, status=""):
         "has_post": has_post,
         "has_reels": has_reels,
         "has_tiktok": has_tiktok,
+        "has_post_reach": has_post_reach,
+        "has_reels_reach": has_reels_reach,
+        "has_tiktok_reach": has_tiktok_reach,
         "post": post,
         "reels": reels,
         "tiktok": tiktok,
@@ -402,6 +437,24 @@ def top3(rows, metric):
     return sorted(rows, key=lambda x: (-x[metric], x["username"]))[:3]
 
 
+def top3_optional(rows, metric):
+    return top3([r for r in rows if r.get(metric) is not None], metric)
+
+
+def reach_mean_sd(rows):
+    vals = [r["reach"] for r in rows if r.get("reach") is not None]
+    if not vals:
+        return 0.0, 0.0
+    return statistics.mean(vals), pstdev(vals)
+
+
+def avg_reach(source, fmt):
+    n = sum(1 for r in source if r.get(REACH_HAS_KEY[fmt]))
+    if not n:
+        return 0.0
+    return sum(r[fmt]["reach"] for r in source if r.get(REACH_HAS_KEY[fmt])) / n
+
+
 def profile_link(username):
     return f"https://instagram.com/{username}"
 
@@ -424,6 +477,9 @@ def build_section_rows(source, metric_key, er_key, label):
         row_out = {
             "username": r["username"],
             "views": r[metric_key]["views"],
+            "reach": (
+                r[metric_key]["reach"] if r.get(REACH_HAS_KEY[metric_key]) else None
+            ),
             "likes": r[metric_key]["likes"],
             "comments": r[metric_key]["comments"],
             "shares": r[metric_key]["shares"],
@@ -469,9 +525,19 @@ def build_report(
     reels_kols = len(reels_rows)
     tiktok_kols = len(tiktok_rows)
     has_post_data = post_kols > 0
+    has_post_reach_data = any(r.get("has_post_reach") for r in post_source)
+    has_reels_reach_data = any(r.get("has_reels_reach") for r in reels_source)
+    has_tiktok_reach_data = any(r.get("has_tiktok_reach") for r in tiktok_source)
 
     def totals(source, fmt):
-        return {k: sum(r[fmt][k] for r in source) for k in ALL_KEYS}
+        return {
+            k: sum(
+                r[fmt][k]
+                for r in source
+                if k != "reach" or r.get(REACH_HAS_KEY[fmt])
+            )
+            for k in ALL_KEYS
+        }
 
     pt = totals(post_source, "post")
     rt = totals(reels_source, "reels")
@@ -484,11 +550,17 @@ def build_report(
     post_avg_views = pt["views"] / post_kols if post_kols else 0
     reels_avg_views = rt["views"] / reels_kols if reels_kols else 0
     tiktok_avg_views = tt["views"] / tiktok_kols if tiktok_kols else 0
+    post_avg_reach = avg_reach(post_source, "post")
+    reels_avg_reach = avg_reach(reels_source, "reels")
+    tiktok_avg_reach = avg_reach(tiktok_source, "tiktok")
     post_avg_er = statistics.mean([r["er"] for r in post_rows]) if post_rows else 0
     reels_avg_er = statistics.mean([r["er"] for r in reels_rows]) if reels_rows else 0
     tiktok_avg_er = (
         statistics.mean([r["er"] for r in tiktok_rows]) if tiktok_rows else 0
     )
+    post_reach_mean, post_reach_sd = reach_mean_sd(post_rows)
+    reels_reach_mean, reels_reach_sd = reach_mean_sd(reels_rows)
+    tiktok_reach_mean, tiktok_reach_sd = reach_mean_sd(tiktok_rows)
 
     channel_stats = []
     if tiktok_kols:
@@ -519,6 +591,9 @@ def build_report(
         reels_kols=reels_kols,
         tiktok_kols=tiktok_kols,
         has_post_data=has_post_data,
+        has_post_reach_data=has_post_reach_data,
+        has_reels_reach_data=has_reels_reach_data,
+        has_tiktok_reach_data=has_tiktok_reach_data,
         show_campaign_column=show_campaign_column,
         pt=pt,
         rt=rt,
@@ -530,6 +605,9 @@ def build_report(
         post_avg_views=post_avg_views,
         reels_avg_views=reels_avg_views,
         tiktok_avg_views=tiktok_avg_views,
+        post_avg_reach=post_avg_reach,
+        reels_avg_reach=reels_avg_reach,
+        tiktok_avg_reach=tiktok_avg_reach,
         post_avg_er=post_avg_er,
         reels_avg_er=reels_avg_er,
         tiktok_avg_er=tiktok_avg_er,
@@ -538,28 +616,37 @@ def build_report(
         reach_pct=reach_pct,
         er_winner=er_winner,
         post_top_views=top3(post_rows, "views"),
+        post_top_reach=top3_optional(post_rows, "reach"),
         post_top_comments=top3(post_rows, "comments"),
         post_top_saves=top3(post_rows, "saves"),
         reels_top_views=top3(reels_rows, "views"),
+        reels_top_reach=top3_optional(reels_rows, "reach"),
         reels_top_comments=top3(reels_rows, "comments"),
         reels_top_saves=top3(reels_rows, "saves"),
         tiktok_top_views=top3(tiktok_rows, "views"),
+        tiktok_top_reach=top3_optional(tiktok_rows, "reach"),
         tiktok_top_comments=top3(tiktok_rows, "comments"),
         tiktok_top_saves=top3(tiktok_rows, "saves"),
         post_rows=post_rows,
         reels_rows=reels_rows,
         tiktok_rows=tiktok_rows,
         post_views_mean=post_views_mean,
+        post_reach_mean=post_reach_mean,
         post_er_mean=post_er_mean,
         post_views_sd=post_views_sd,
+        post_reach_sd=post_reach_sd,
         post_er_sd=post_er_sd,
         reels_views_mean=reels_views_mean,
+        reels_reach_mean=reels_reach_mean,
         reels_er_mean=reels_er_mean,
         reels_views_sd=reels_views_sd,
+        reels_reach_sd=reels_reach_sd,
         reels_er_sd=reels_er_sd,
         tiktok_views_mean=tiktok_views_mean,
+        tiktok_reach_mean=tiktok_reach_mean,
         tiktok_er_mean=tiktok_er_mean,
         tiktok_views_sd=tiktok_views_sd,
+        tiktok_reach_sd=tiktok_reach_sd,
         tiktok_er_sd=tiktok_er_sd,
     )
 
@@ -586,7 +673,7 @@ def kol_username_html(username, link=True):
     return html.escape(username)
 
 
-def highlight_top3_rows(top_views, top_comments, top_saves, link=True):
+def highlight_top3_rows(top_views, top_comments, top_saves, link=True, top_reach=None):
     def metric_row(label, rows3, metric):
         entries = "".join(
             f'<div class="highlight-entry">'
@@ -603,23 +690,43 @@ def highlight_top3_rows(top_views, top_comments, top_saves, link=True):
             f"</div>"
         )
 
+    html_out = metric_row("👁️ Most Viewed", top_views, "views")
+    if top_reach:
+        html_out += metric_row("📡 Highest Reach", top_reach, "reach")
     return (
-        metric_row("👁️ Most Viewed", top_views, "views")
+        html_out
         + metric_row("💬 Most Commented", top_comments, "comments")
         + metric_row("💾 Most Saved", top_saves, "saves")
     )
 
 
 def highlight_card(
-    card_class, title_color, icon, title, top_views, top_comments, top_saves, link=True
+    card_class,
+    title_color,
+    icon,
+    title,
+    top_views,
+    top_comments,
+    top_saves,
+    link=True,
+    top_reach=None,
 ):
     return f"""<div class="compare-card {card_class}">
         <div class="compare-title" style="color:{title_color}">{icon} {title}</div>
-        {highlight_top3_rows(top_views, top_comments, top_saves, link)}
+        {highlight_top3_rows(top_views, top_comments, top_saves, link, top_reach)}
       </div>"""
 
 
-def table_html(rowsx, link=True, show_campaign=False):
+def metric_table_header(campaign_th, show_reach):
+    reach_th = "<th>Reach</th>" if show_reach else ""
+    return (
+        f"{campaign_th}<th>KOL Username</th><th>Views</th>{reach_th}"
+        "<th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th>"
+        "<th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th>"
+    )
+
+
+def table_html(rowsx, link=True, show_campaign=False, show_reach=False):
     out = []
     for r in rowsx:
         username_html = (
@@ -630,12 +737,16 @@ def table_html(rowsx, link=True, show_campaign=False):
         campaign_cell = ""
         if show_campaign:
             campaign_cell = f"<td>{html.escape(r.get('campaign_name', ''))}</td>"
+        reach_cell = (
+            f'<td class="num">{nfmt(r.get("reach"))}</td>' if show_reach else ""
+        )
         out.append(
             f"""
                 <tr>
                   {campaign_cell}
                   <td>{username_html}</td>
                   <td class="num">{nfmt(r["views"])}</td>
+                  {reach_cell}
                   <td class="num">{nfmt(r["likes"])}</td>
                   <td>{nfmt(r["comments"])}</td>
                   <td>{nfmt(r["shares"])}</td>
@@ -648,6 +759,42 @@ def table_html(rowsx, link=True, show_campaign=False):
                 """
         )
     return "".join(out)
+
+
+def compare_total_reach_row(has_reach, total_reach):
+    if not has_reach:
+        return ""
+    return (
+        f'<div class="compare-row"><span class="compare-row-label">📡 Total Reach</span>'
+        f'<span class="compare-row-val">{nfmt(total_reach)}</span></div>'
+    )
+
+
+def compare_avg_reach_row(has_reach, avg_reach_val):
+    if not has_reach:
+        return ""
+    return (
+        f'<div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span>'
+        f'<span class="compare-row-val">{nfmt(round(avg_reach_val))}</span></div>'
+    )
+
+
+def reach_sublabel(has_reach, total_reach):
+    if not has_reach:
+        return ""
+    return f" · Reach {nfmt(total_reach)}"
+
+
+def tooltip_reach_line(has_reach, total_reach):
+    if not has_reach:
+        return ""
+    return f"<br>Reach: {nfmt(total_reach)}"
+
+
+def reach_benchmark_line(has_reach, mean, sd):
+    if not has_reach:
+        return ""
+    return f"Reach Mean {nfmt(round(mean))}, SD {nfmt(round(sd))}<br>\n      "
 
 
 def render_panel(r: ReportPayload, brand: str) -> str:
@@ -668,8 +815,8 @@ def render_panel(r: ReportPayload, brand: str) -> str:
       <div class="table-panel-title" style="color:var(--post)">{IG_ICON} Posts Performance Table</div>
       <div class="table-wrapper">
         <table>
-          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(r.post_rows, show_campaign=sc)}</tbody>
+          <thead><tr>{metric_table_header(campaign_th, r.has_post_reach_data)}</tr></thead>
+          <tbody>{table_html(r.post_rows, show_campaign=sc, show_reach=r.has_post_reach_data)}</tbody>
         </table>
       </div>
     </div>"""
@@ -681,26 +828,29 @@ def render_panel(r: ReportPayload, brand: str) -> str:
             r.post_top_views,
             r.post_top_comments,
             r.post_top_saves,
+            top_reach=r.post_top_reach if r.has_post_reach_data else None,
         )
         post_compare_card = f"""
       <div class="compare-card posts">
         <div class="compare-title" style="color:var(--post)">{IG_ICON} Posts</div>
         <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.pt["views"])}</span></div>
+        {compare_total_reach_row(r.has_post_reach_data, r.pt["reach"])}
         <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.pt["likes"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.pt["comments"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.pt["shares"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.pt["reposts"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.pt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.post_avg_views))}</span></div>
+        {compare_avg_reach_row(r.has_post_reach_data, r.post_avg_reach)}
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.post_avg_er)}</span></div>
       </div>"""
         post_overview_cards = f"""
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt["views"])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data</div></div>"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt["views"])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data{reach_sublabel(r.has_post_reach_data, r.pt["reach"])}</div></div>"""
         post_engagement_cards = f"""
       <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt["likes"])} · Comments {nfmt(r.pt["comments"])} · Shares {nfmt(r.pt["shares"])} · Saves {nfmt(r.pt["saves"])}</div></div>"""
         post_benchmarks = f"""<strong>Post Benchmarks:</strong><br>
       Views Mean {nfmt(round(r.post_views_mean))}, SD {nfmt(round(r.post_views_sd))}<br>
-      ER Mean {pfmt(r.post_er_mean)}, SD {pfmt(r.post_er_sd)}<br><br>"""
+      {reach_benchmark_line(r.has_post_reach_data, r.post_reach_mean, r.post_reach_sd)}ER Mean {pfmt(r.post_er_mean)}, SD {pfmt(r.post_er_sd)}<br><br>"""
 
     highlights_cards = (
         highlight_card(
@@ -712,6 +862,7 @@ def render_panel(r: ReportPayload, brand: str) -> str:
             r.tiktok_top_comments,
             r.tiktok_top_saves,
             link=False,
+            top_reach=r.tiktok_top_reach if r.has_tiktok_reach_data else None,
         )
         + highlight_card(
             "reels",
@@ -721,6 +872,7 @@ def render_panel(r: ReportPayload, brand: str) -> str:
             r.reels_top_views,
             r.reels_top_comments,
             r.reels_top_saves,
+            top_reach=r.reels_top_reach if r.has_reels_reach_data else None,
         )
         + post_highlight_card
     )
@@ -730,23 +882,27 @@ def render_panel(r: ReportPayload, brand: str) -> str:
       <div class="compare-card tiktok">
         <div class="compare-title" style="color:var(--tiktok)">{TT_ICON} TikTok</div>
         <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.tt["views"])}</span></div>
+        {compare_total_reach_row(r.has_tiktok_reach_data, r.tt["reach"])}
         <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.tt["likes"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.tt["comments"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.tt["shares"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.tt["reposts"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.tt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.tiktok_avg_views))}</span></div>
+        {compare_avg_reach_row(r.has_tiktok_reach_data, r.tiktok_avg_reach)}
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.tiktok_avg_er)}</span></div>
       </div>
       <div class="compare-card reels">
         <div class="compare-title" style="color:var(--reel)">{IG_ICON} Reels</div>
         <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">{nfmt(r.rt["views"])}</span></div>
+        {compare_total_reach_row(r.has_reels_reach_data, r.rt["reach"])}
         <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">{nfmt(r.rt["likes"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">{nfmt(r.rt["comments"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">{nfmt(r.rt["shares"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">{nfmt(r.rt["reposts"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">{nfmt(r.rt["saves"])}</span></div>
         <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">{nfmt(round(r.reels_avg_views))}</span></div>
+        {compare_avg_reach_row(r.has_reels_reach_data, r.reels_avg_reach)}
         <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">{pfmt(r.reels_avg_er)}</span></div>
       </div>"""
         + post_compare_card
@@ -755,7 +911,7 @@ def render_panel(r: ReportPayload, brand: str) -> str:
     show_verdict = sum(1 for k in (r.tiktok_kols, r.reels_kols, r.post_kols) if k > 0) >= 2
     verdict = ""
     if show_verdict:
-        verdict = f"""<div class="verdict"><strong>Key Takeaway:</strong> {r.reach_winner} led reach by <strong>{nfmt(r.reach_diff)} views</strong> ({r.reach_pct:.2f}% ahead of the next channel), while {r.er_winner} delivered stronger proportional engagement per view on average.</div>"""
+        verdict = f"""<div class="verdict"><strong>Key Takeaway:</strong> {r.reach_winner} led views by <strong>{nfmt(r.reach_diff)}</strong> ({r.reach_pct:.2f}% ahead of the next channel), while {r.er_winner} delivered stronger proportional engagement per view on average.</div>"""
 
     row_meta = []
     if r.tiktok_kols > 0:
@@ -773,11 +929,11 @@ def render_panel(r: ReportPayload, brand: str) -> str:
     row_meta_html = "\n    ".join(row_meta)
 
     tiktok_overview_card = f"""
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt["views"])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data</div></div>"""
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok</div><div class="stat-num">{nfmt(r.tt["views"])}</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across {nfmt(r.tiktok_kols)} KOL rows with TikTok data{reach_sublabel(r.has_tiktok_reach_data, r.tt["reach"])}</div></div>"""
     reels_overview_card = f"""
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt["views"])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data</div></div>"""
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reels</div><div class="stat-num">{nfmt(r.rt["views"])}</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across {nfmt(r.reels_kols)} KOL rows with Reels data{reach_sublabel(r.has_reels_reach_data, r.rt["reach"])}</div></div>"""
     total_overview_card = f"""
-      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button></div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}<br>Engagement: {nfmt(r.tt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}<br>Engagement: {nfmt(r.pt_eng)}</div></div>"""
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts{reach_sublabel(r.has_post_reach_data or r.has_reels_reach_data or r.has_tiktok_reach_data, r.pt["reach"] + r.rt["reach"] + r.tt["reach"])}</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button></div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}{tooltip_reach_line(r.has_tiktok_reach_data, r.tt["reach"])}<br>Engagement: {nfmt(r.tt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}{tooltip_reach_line(r.has_reels_reach_data, r.rt["reach"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}{tooltip_reach_line(r.has_post_reach_data, r.pt["reach"])}<br>Engagement: {nfmt(r.pt_eng)}</div></div>"""
     tiktok_engagement_card = f"""
       <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Saves {nfmt(r.tt["saves"])}</div></div>"""
     reels_engagement_card = f"""
@@ -787,10 +943,10 @@ def render_panel(r: ReportPayload, brand: str) -> str:
 
     tiktok_benchmarks = f"""<strong>TikTok Benchmarks:</strong><br>
       Views Mean {nfmt(round(r.tiktok_views_mean))}, SD {nfmt(round(r.tiktok_views_sd))}<br>
-      ER Mean {pfmt(r.tiktok_er_mean)}, SD {pfmt(r.tiktok_er_sd)}<br><br>"""
+      {reach_benchmark_line(r.has_tiktok_reach_data, r.tiktok_reach_mean, r.tiktok_reach_sd)}ER Mean {pfmt(r.tiktok_er_mean)}, SD {pfmt(r.tiktok_er_sd)}<br><br>"""
     reels_benchmarks = f"""<strong>Reels Benchmarks:</strong><br>
       Views Mean {nfmt(round(r.reels_views_mean))}, SD {nfmt(round(r.reels_views_sd))}<br>
-      ER Mean {pfmt(r.reels_er_mean)}, SD {pfmt(r.reels_er_sd)}<br><br>"""
+      {reach_benchmark_line(r.has_reels_reach_data, r.reels_reach_mean, r.reels_reach_sd)}ER Mean {pfmt(r.reels_er_mean)}, SD {pfmt(r.reels_er_sd)}<br><br>"""
 
     return f"""
 <div class="campaign-panel" data-campaign="{html.escape(r.campaign_id)}">
@@ -848,8 +1004,8 @@ def render_panel(r: ReportPayload, brand: str) -> str:
       <div class="table-panel-title" style="color:var(--tiktok)">{TT_ICON} TikTok Performance Table</div>
       <div class="table-wrapper">
         <table>
-          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(r.tiktok_rows, link=False, show_campaign=sc)}</tbody>
+          <thead><tr>{metric_table_header(campaign_th, r.has_tiktok_reach_data)}</tr></thead>
+          <tbody>{table_html(r.tiktok_rows, link=False, show_campaign=sc, show_reach=r.has_tiktok_reach_data)}</tbody>
         </table>
       </div>
     </div>
@@ -857,8 +1013,8 @@ def render_panel(r: ReportPayload, brand: str) -> str:
       <div class="table-panel-title" style="color:var(--reel)">{IG_ICON} Reels Performance Table</div>
       <div class="table-wrapper">
         <table>
-          <thead><tr>{campaign_th}<th>KOL Username</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
-          <tbody>{table_html(r.reels_rows, show_campaign=sc)}</tbody>
+          <thead><tr>{metric_table_header(campaign_th, r.has_reels_reach_data)}</tr></thead>
+          <tbody>{table_html(r.reels_rows, show_campaign=sc, show_reach=r.has_reels_reach_data)}</tbody>
         </table>
       </div>
     </div>
@@ -1225,7 +1381,7 @@ def generate_html(reports, brand, brand_short, theme=None):
 {panels_html}
 <footer>Prepared for <strong>{html.escape(brand)}</strong> · Instagram KOL Campaign Report</footer>
 <script>
-  var sortableColumns = ['Views', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
+  var sortableColumns = ['Views', 'Reach', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
 
   function initPanelSort(panel) {{
     panel.querySelectorAll('.table-wrapper table').forEach(function (table) {{
@@ -1253,6 +1409,8 @@ def generate_html(reports, brand, brand_short, theme=None):
             var b = rowB.cells[index].textContent.trim().replace(/,/g, '').replace('%', '');
             var aNum = Number(a);
             var bNum = Number(b);
+            if (!isFinite(aNum)) aNum = 0;
+            if (!isFinite(bNum)) bNum = 0;
             return nextOrder === 'asc' ? aNum - bNum : bNum - aNum;
           }});
 
