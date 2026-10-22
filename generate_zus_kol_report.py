@@ -178,10 +178,14 @@ IG_ICON = '<img class="platform-icon" src="assets/instagram.png" alt="">'
 TT_ICON = '<img class="platform-icon" src="assets/tiktok.png" alt="">'
 
 
-def calc_er(likes, comments, shares, saves, views):
+def engagement_count(likes, comments, shares, reposts, saves):
+    return likes + comments + shares + reposts + saves
+
+
+def calc_er(likes, comments, shares, reposts, saves, views):
     if views <= 0:
         return 0.0
-    return ((likes + comments + shares + saves) / views) * 100.0
+    return (engagement_count(likes, comments, shares, reposts, saves) / views) * 100.0
 
 
 def pstdev(values):
@@ -295,6 +299,7 @@ def parse_kol_row(normalized, row_num, status=""):
             post["likes"],
             post["comments"],
             post["shares"],
+            post["reposts"],
             post["saves"],
             post["views"],
         )
@@ -306,6 +311,7 @@ def parse_kol_row(normalized, row_num, status=""):
             reels["likes"],
             reels["comments"],
             reels["shares"],
+            reels["reposts"],
             reels["saves"],
             reels["views"],
         )
@@ -317,6 +323,7 @@ def parse_kol_row(normalized, row_num, status=""):
             tiktok["likes"],
             tiktok["comments"],
             tiktok["shares"],
+            tiktok["reposts"],
             tiktok["saves"],
             tiktok["views"],
         )
@@ -542,9 +549,9 @@ def build_report(
     pt = totals(post_source, "post")
     rt = totals(reels_source, "reels")
     tt = totals(tiktok_source, "tiktok")
-    pt_eng = pt["likes"] + pt["comments"] + pt["shares"] + pt["saves"]
-    rt_eng = rt["likes"] + rt["comments"] + rt["shares"] + rt["saves"]
-    tt_eng = tt["likes"] + tt["comments"] + tt["shares"] + tt["saves"]
+    pt_eng = engagement_count(pt["likes"], pt["comments"], pt["shares"], pt["reposts"], pt["saves"])
+    rt_eng = engagement_count(rt["likes"], rt["comments"], rt["shares"], rt["reposts"], rt["saves"])
+    tt_eng = engagement_count(tt["likes"], tt["comments"], tt["shares"], tt["reposts"], tt["saves"])
     combined_eng = pt_eng + rt_eng + tt_eng
 
     post_avg_views = pt["views"] / post_kols if post_kols else 0
@@ -847,7 +854,7 @@ def render_panel(r: ReportPayload, brand: str) -> str:
         post_overview_cards = f"""
       <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Posts</div><div class="stat-num">{nfmt(r.pt["views"])}</div><div class="stat-label">Total Post Views</div><div class="stat-sublabel">Across {nfmt(r.post_kols)} KOL rows with Post data{reach_sublabel(r.has_post_reach_data, r.pt["reach"])}</div></div>"""
         post_engagement_cards = f"""
-      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt["likes"])} · Comments {nfmt(r.pt["comments"])} · Shares {nfmt(r.pt["shares"])} · Saves {nfmt(r.pt["saves"])}</div></div>"""
+      <div class="stat-card stat-card-post"><div class="stat-badge badge-post">{IG_ICON} Post Engagement</div><div class="stat-num">{nfmt(r.pt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes {nfmt(r.pt["likes"])} · Comments {nfmt(r.pt["comments"])} · Shares {nfmt(r.pt["shares"])} · Reposts {nfmt(r.pt["reposts"])} · Saves {nfmt(r.pt["saves"])}</div></div>"""
         post_benchmarks = f"""<strong>Post Benchmarks:</strong><br>
       Views Mean {nfmt(round(r.post_views_mean))}, SD {nfmt(round(r.post_views_sd))}<br>
       {reach_benchmark_line(r.has_post_reach_data, r.post_reach_mean, r.post_reach_sd)}ER Mean {pfmt(r.post_er_mean)}, SD {pfmt(r.post_er_sd)}<br><br>"""
@@ -935,9 +942,9 @@ def render_panel(r: ReportPayload, brand: str) -> str:
     total_overview_card = f"""
       <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.pt["views"] + r.rt["views"] + r.tt["views"])}</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts{reach_sublabel(r.has_post_reach_data or r.has_reels_reach_data or r.has_tiktok_reach_data, r.pt["reach"] + r.rt["reach"] + r.tt["reach"])}</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-{r.campaign_id}">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-{r.campaign_id}">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-{r.campaign_id}">Post Stats</button></div><div id="tiktok-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>TikTok</strong><br>Views: {nfmt(r.tt["views"])}{tooltip_reach_line(r.has_tiktok_reach_data, r.tt["reach"])}<br>Engagement: {nfmt(r.tt_eng)}</div><div id="reel-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Reels</strong><br>Views: {nfmt(r.rt["views"])}{tooltip_reach_line(r.has_reels_reach_data, r.rt["reach"])}<br>Engagement: {nfmt(r.rt_eng)}</div><div id="post-tooltip-{r.campaign_id}" class="mobile-tooltip"><strong>Posts</strong><br>Views: {nfmt(r.pt["views"])}{tooltip_reach_line(r.has_post_reach_data, r.pt["reach"])}<br>Engagement: {nfmt(r.pt_eng)}</div></div>"""
     tiktok_engagement_card = f"""
-      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Saves {nfmt(r.tt["saves"])}</div></div>"""
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok">{TT_ICON} TikTok Engagement</div><div class="stat-num">{nfmt(r.tt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes {nfmt(r.tt["likes"])} · Comments {nfmt(r.tt["comments"])} · Shares {nfmt(r.tt["shares"])} · Reposts {nfmt(r.tt["reposts"])} · Saves {nfmt(r.tt["saves"])}</div></div>"""
     reels_engagement_card = f"""
-      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt["likes"])} · Comments {nfmt(r.rt["comments"])} · Shares {nfmt(r.rt["shares"])} · Saves {nfmt(r.rt["saves"])}</div></div>"""
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel">{IG_ICON} Reel Engagement</div><div class="stat-num">{nfmt(r.rt_eng)}</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes {nfmt(r.rt["likes"])} · Comments {nfmt(r.rt["comments"])} · Shares {nfmt(r.rt["shares"])} · Reposts {nfmt(r.rt["reposts"])} · Saves {nfmt(r.rt["saves"])}</div></div>"""
     combined_engagement_card = f"""
       <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">{nfmt(r.combined_eng)}</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">TikTok + Reel + Post Engagement</div></div>"""
 

@@ -36,7 +36,7 @@ python3 generate_zus_kol_report.py --input ./raw.csv --brand "ZUS Coffee" --bran
 | TikTok | `TT - View/Reach/Like/Comment/Share/Save` (repost always 0) |
 
 - **parse_num**: strip commas; non-digit → missing
-- **ER**: `(likes + comments + shares + saves) / views × 100`
+- **ER**: `(likes + comments + shares + reposts + saves) / views × 100`. TikTok has no repost column, so that term is 0.
 - **Reach**: optional Foxtells metric (unique accounts). Hidden in a view when no row has reach data; ER still uses views.
 
 ## Foxtells format (`data/*.csv`)
