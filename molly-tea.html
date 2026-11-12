@@ -1,0 +1,3813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molly Tea</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --zus-blue: #8C353C; --zus-blue-soft: #B24D55; --zus-blue-pale: #EEC8CB; --bg: #F6E1E2;
+    --ink: #321618; --ink-muted: #673236; --ink-soft: #814B4F; --deep: #491D21;
+    --reel: #8F333A; --reel-light: #F2E7E7; --post: #67272C; --post-light: #EDE5E6;
+    --tiktok: #111111; --tiktok-light: #F1F1F1;
+    --border: rgba(140,53,60,0.22); --shadow: 0 4px 28px rgba(73,29,33,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.6; }
+  .campaign-bar { background: white; border-bottom: 1px solid var(--border); padding: 14px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(73,29,33,0.08); }
+  .campaign-bar-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .campaign-bar-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-soft); margin-right: 6px; }
+  .campaign-pill { border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+  .campaign-pill:hover { border-color: var(--zus-blue-soft); color: var(--deep); }
+  .campaign-pill.active { background: var(--zus-blue); color: white; border-color: var(--zus-blue); }
+  .campaign-panel { display: none; }
+  .campaign-panel.active { display: block; }
+  .report-header { background: var(--zus-blue); color: white; padding: 56px 64px 40px; position: relative; overflow: hidden; }
+  .report-header::after { content: 'MollyTea'; position: absolute; bottom: -20px; right: 40px; font-family: 'Playfair Display', serif; font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.09); letter-spacing: -4px; }
+  .header-tag { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #E2BBBE; margin-bottom: 14px; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }
+  .header-sub { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+  .header-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #E2BBBE; font-weight: 600; }
+  .meta-value { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.92); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 42px 30px; }
+  .section { margin-bottom: 48px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 700; margin-bottom: 20px; color: var(--deep); }
+  .overview-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+  .overview-grid-2 { grid-template-columns: 1fr; }
+  .overview-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; box-shadow: var(--shadow); }
+  .stat-card-total {
+    background: linear-gradient(135deg, #F4DBDD 0%, #FFFFFF 100%);
+    border: 2px solid #B24D55;
+    box-shadow: 0 10px 30px rgba(140,53,60,0.2);
+    transform: translateY(-2px);
+  }
+  .stat-num { font-family: 'Prompt', sans-serif; font-size: 34px; font-weight: 700; color: var(--deep); line-height: 1; margin-bottom: 6px; }
+  .stat-label { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .stat-sublabel { font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
+  .platform-icon { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; }
+  .stat-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }
+  .badge-post { background: var(--post-light); color: var(--post); }
+  .badge-reel { background: var(--reel-light); color: var(--reel); }
+  .badge-tiktok { background: var(--tiktok-light); color: var(--tiktok); }
+  .badge-total { background: var(--zus-blue-pale); color: var(--zus-blue); }
+  .mobile-tooltip-triggers { display: none; margin-top: 10px; gap: 8px; flex-wrap: wrap; }
+  .mobile-tooltip-btn { border: 1px solid #D59DA2; background: #fff; color: var(--zus-blue); border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .mobile-tooltip { display: none; margin-top: 8px; background: #fff; border: 1px solid #F1D3D5; border-radius: 10px; padding: 10px; font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
+  .mobile-tooltip.show { display: block; }
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .compare-card { border-radius: 14px; padding: 24px; border: 1.5px solid; background: white; }
+  .compare-card.posts { border-color: rgba(103,39,44,0.36); }
+  .compare-card.reels { border-color: rgba(143,51,58,0.36); }
+  .compare-card.tiktok { border-color: rgba(17,17,17,0.24); }
+  .compare-title { display: inline-flex; align-items: center; gap: 6px; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .compare-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+  .compare-row:last-child { border: none; }
+  .compare-row-label { color: var(--ink-muted); font-weight: 500; }
+  .compare-row-val { font-weight: 700; color: var(--deep); font-size: 14px; }
+  .verdict { margin-top: 20px; padding: 16px 18px; background: var(--zus-blue-pale); border-left: 4px solid var(--zus-blue); border-radius: 10px; font-size: 13px; color: var(--deep); }
+  .highlight-metric { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .highlight-metric:last-child { border-bottom: none; }
+  .highlight-metric-label { color: var(--ink-muted); font-weight: 500; font-size: 13px; margin-bottom: 6px; }
+  .highlight-top3 { display: flex; flex-direction: column; gap: 4px; }
+  .highlight-entry { display: flex; align-items: center; gap: 8px; font-size: 12px; width: 100%; }
+  .highlight-user { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .highlight-user a { color: var(--zus-blue); text-decoration: none; }
+  .highlight-user a:hover { text-decoration: underline; }
+  .highlight-num { font-family: 'Prompt', sans-serif; font-weight: 700; color: var(--deep); flex-shrink: 0; font-size: 13px; }
+  .highlight-rank { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .highlight-rank.rank-1 { background: #FFD700; color: #5A3800; }
+  .highlight-rank.rank-2 { background: #C0C0C0; color: #333; }
+  .highlight-rank.rank-3 { background: #CD7F32; color: #fff; }
+  .table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); background: white; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; background: white; }
+  thead tr { background: var(--zus-blue); color: rgba(255,255,255,0.92); }
+  th { padding: 11px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-align: center; white-space: nowrap; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { background: var(--zus-blue-soft); }
+  th.sortable.active { background: #732B31; }
+  th:first-child, td:first-child { text-align: left; padding-left: 16px; }
+  tbody tr { border-bottom: 1px solid rgba(140,53,60,0.1); }
+  td { padding: 10px 10px; font-size: 12.5px; text-align: center; color: var(--ink-muted); }
+  td.num { font-family: 'Prompt', sans-serif; font-weight: 700; color: var(--deep); }
+  td.er { font-weight: 700; color: var(--deep); }
+  td a { color: var(--zus-blue); text-decoration: none; font-weight: 600; }
+  td a:hover { text-decoration: underline; }
+  .tag { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+  .tag-outstanding { background: #F1D0D3; color: #491D21; } .tag-above { background: #D99DA2; color: #6D2C31; } .tag-average { background: #F2D6D8; color: #B24D55; }
+  .tag-below { background: #FFF0E8; color: #A24E1E; } .tag-under { background: #FCE4E4; color: #8B1010; } .tag-highly { background: #E2AFB3; color: #7E3036; }
+  .tag-engaging { background: #DDA6AA; color: #8C353C; } .tag-moderate { background: #F2D6D8; color: #B24D55; } .tag-low { background: #FFF0E8; color: #A24E1E; } .tag-minimal { background: #FCE4E4; color: #8B1010; }
+  .appendix-note { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 12px; color: var(--ink-soft); margin-bottom: 16px; }
+  .table-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .table-panel-title { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+  .table-tab-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: white; color: var(--ink-muted); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+  .table-tab-btn:hover { border-color: var(--zus-blue-soft); color: var(--deep); }
+  .table-tab-btn.active { background: var(--zus-blue); color: white; border-color: var(--zus-blue); }
+  .table-tab-btn.active:focus-visible { color: white; outline: none; }
+  .table-panel { display: none; }
+  .table-panel.active { display: block; }
+  footer { background: var(--zus-blue); color: rgba(255,255,255,0.6); text-align: center; padding: 20px; font-size: 11px; }
+  @media (min-width: 768px) {
+    .overview-grid { grid-template-columns: repeat(4, 1fr); }
+    .overview-grid-2 { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 800px) {
+    .report-header { padding: 32px 20px; }
+    .container { padding: 24px 12px; }
+    .overview-grid, .overview-grid-2, .overview-grid-3, .compare-grid { grid-template-columns: 1fr; }
+    .overview-grid .stat-card-post,
+    .overview-grid .stat-card-reel,
+    .overview-grid .stat-card-tiktok,
+    .overview-grid-3 .stat-card-post,
+    .overview-grid-3 .stat-card-reel,
+    .overview-grid-3 .stat-card-tiktok,
+    .overview-grid-2 .stat-card-post,
+    .overview-grid-2 .stat-card-reel,
+    .overview-grid-2 .stat-card-tiktok { display: none; }
+    .mobile-tooltip-triggers { display: flex; }
+  }
+</style>
+</head>
+<body>
+<div class="campaign-bar">
+  <div class="campaign-bar-inner">
+    <span class="campaign-bar-label">Campaign</span>
+    <button type="button" class="campaign-pill active" data-campaign="all">All Campaigns</button>
+<button type="button" class="campaign-pill" data-campaign="molly-tea-halloween">Molly Tea Halloween</button>
+<button type="button" class="campaign-pill" data-campaign="molly-tea-special-event">Molly Tea Special Event</button>
+  </div>
+</div>
+
+<div class="campaign-panel" data-campaign="all">
+<div class="report-header">
+  <div class="header-tag">KOL Campaign Report</div>
+  <div class="header-title">Molly Tea</div>
+  <div class="header-sub">All Campaigns</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
+    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">54</span></div>
+    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">53</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">Campaign Overview</div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div><div class="stat-num">294,202</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across 54 KOL rows with TikTok data · Reach 239,529</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div><div class="stat-num">74,862</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 53 KOL rows with Reels data · Reach 31,633</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">369,064</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts · Reach 271,162</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-all">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-all">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-all">Post Stats</button></div><div id="tiktok-tooltip-all" class="mobile-tooltip"><strong>TikTok</strong><br>Views: 294,202<br>Reach: 239,529<br>Engagement: 4,695</div><div id="reel-tooltip-all" class="mobile-tooltip"><strong>Reels</strong><br>Views: 74,862<br>Reach: 31,633<br>Engagement: 2,593</div><div id="post-tooltip-all" class="mobile-tooltip"><strong>Posts</strong><br>Views: 0<br>Engagement: 0</div></div>
+    </div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Engagement</div><div class="stat-num">4,695</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 3,624 · Comments 272 · Shares 486 · Reposts 0 · Saves 313</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reel Engagement</div><div class="stat-num">2,593</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 2,287 · Comments 83 · Shares 109 · Reposts 100 · Saves 14</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">7,288</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">TikTok + Reel + Post Engagement</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Performance by Channel</div>
+    <div class="compare-grid">
+      <div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">294,202</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">239,529</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">3,624</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">272</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">486</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">0</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">313</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">5,448</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">4,436</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">3.04%</span></div>
+      </div>
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">74,862</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">31,633</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">2,287</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">83</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">109</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">100</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">14</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">1,412</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">597</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">4.71%</span></div>
+      </div></div>
+    <div class="verdict"><strong>Key Takeaway:</strong> TikTok led views by <strong>219,340</strong> (292.99% ahead of the next channel), while Reels delivered stronger proportional engagement per view on average.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top 3 Highlights</div>
+    <div class="compare-grid"><div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">75,600</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">64,500</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">aummntww</span><span class="highlight-num">48,300</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">67,600</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">aummntww</span><span class="highlight-num">46,700</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">42,600</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">tu_story</span><span class="highlight-num">67</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">oilchanaporn</span><span class="highlight-num">28</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">aompkmdiary</span><span class="highlight-num">22</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">60</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">aummntww</span><span class="highlight-num">31</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">feel_wa</span><span class="highlight-num">31</span></div></div></div>
+      </div><div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/napawanj" target="_blank" rel="noopener noreferrer">napawanj</a></span><span class="highlight-num">18,063</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></span><span class="highlight-num">10,529</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></span><span class="highlight-num">4,462</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></span><span class="highlight-num">3,037</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></span><span class="highlight-num">2,693</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></span><span class="highlight-num">2,227</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/jormorcute" target="_blank" rel="noopener noreferrer">jormorcute</a></span><span class="highlight-num">9</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/oeyaei" target="_blank" rel="noopener noreferrer">oeyaei</a></span><span class="highlight-num">8</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></span><span class="highlight-num">7</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/grapeess" target="_blank" rel="noopener noreferrer">grapeess</a></span><span class="highlight-num">3</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/angoonkw" target="_blank" rel="noopener noreferrer">angoonkw</a></span><span class="highlight-num">2</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/any.anyavee" target="_blank" rel="noopener noreferrer">any.anyavee</a></span><span class="highlight-num">2</span></div></div></div>
+      </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KOL Performance Tables</div>
+    <div class="appendix-note">
+      <strong>TikTok Benchmarks:</strong><br>
+      Views Mean 5,448, SD 14,264<br>
+      Reach Mean 4,436, SD 11,966<br>
+      ER Mean 3.04%, SD 2.72%<br><br>
+      <strong>Reels Benchmarks:</strong><br>
+      Views Mean 1,412, SD 2,797<br>
+      Reach Mean 597, SD 637<br>
+      ER Mean 4.71%, SD 3.80%<br><br>
+      
+    </div>
+    <div class="table-tabs">
+      <button type="button" class="table-tab-btn active" data-tab-target="tiktok-table-all"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</button>
+      <button type="button" class="table-tab-btn" data-tab-target="reel-table-all"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</button>
+      
+    </div>
+    <div id="tiktok-table-all" class="table-panel active">
+      <div class="table-panel-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Campaign</th><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>louise_ory</td>
+                  <td class="num">75,600</td>
+                  <td class="num">67,600</td>
+                  <td class="num">838</td>
+                  <td>4</td>
+                  <td>82</td>
+                  <td>0</td>
+                  <td>60</td>
+                  <td class="er">1.30%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>nadia_ndi</td>
+                  <td class="num">64,500</td>
+                  <td class="num">42,600</td>
+                  <td class="num">458</td>
+                  <td>17</td>
+                  <td>22</td>
+                  <td>0</td>
+                  <td>30</td>
+                  <td class="er">0.82%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>aummntww</td>
+                  <td class="num">48,300</td>
+                  <td class="num">46,700</td>
+                  <td class="num">359</td>
+                  <td>3</td>
+                  <td>28</td>
+                  <td>0</td>
+                  <td>31</td>
+                  <td class="er">0.87%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>designcostan</td>
+                  <td class="num">7,673</td>
+                  <td class="num">5,100</td>
+                  <td class="num">69</td>
+                  <td>11</td>
+                  <td>17</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">1.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>graphic.review</td>
+                  <td class="num">7,401</td>
+                  <td class="num">4,900</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">0.16%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>any.anyavee</td>
+                  <td class="num">6,438</td>
+                  <td class="num">4,300</td>
+                  <td class="num">153</td>
+                  <td>2</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td class="er">2.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>feel_wa</td>
+                  <td class="num">5,636</td>
+                  <td class="num">5,400</td>
+                  <td class="num">424</td>
+                  <td>4</td>
+                  <td>101</td>
+                  <td>0</td>
+                  <td>31</td>
+                  <td class="er">9.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>kengkyu.journey</td>
+                  <td class="num">5,214</td>
+                  <td class="num">5,100</td>
+                  <td class="num">17</td>
+                  <td>6</td>
+                  <td>21</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td class="er">0.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>aompkmdiary</td>
+                  <td class="num">5,145</td>
+                  <td class="num">3,100</td>
+                  <td class="num">86</td>
+                  <td>22</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>6</td>
+                  <td class="er">2.29%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>bommbammglow</td>
+                  <td class="num">4,825</td>
+                  <td class="num">4,500</td>
+                  <td class="num">25</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">0.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>dish.is.dietfood</td>
+                  <td class="num">2,935</td>
+                  <td class="num">2,400</td>
+                  <td class="num">49</td>
+                  <td>9</td>
+                  <td>38</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">3.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>oilchanaporn</td>
+                  <td class="num">2,902</td>
+                  <td class="num">2,300</td>
+                  <td class="num">36</td>
+                  <td>28</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>28</td>
+                  <td class="er">3.38%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>kukkikpunnada</td>
+                  <td class="num">2,731</td>
+                  <td class="num">1,900</td>
+                  <td class="num">51</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">2.16%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>oeyaei</td>
+                  <td class="num">2,676</td>
+                  <td class="num">1,900</td>
+                  <td class="num">45</td>
+                  <td>19</td>
+                  <td>27</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td class="er">3.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>vousbeemvoyez</td>
+                  <td class="num">2,500</td>
+                  <td class="num">2,300</td>
+                  <td class="num">14</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>tu_story</td>
+                  <td class="num">2,397</td>
+                  <td class="num">2,400</td>
+                  <td class="num">68</td>
+                  <td>67</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">6.30%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>jormorcute</td>
+                  <td class="num">2,383</td>
+                  <td class="num">1,800</td>
+                  <td class="num">50</td>
+                  <td>8</td>
+                  <td>12</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td class="er">3.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>vousbeemvoyez</td>
+                  <td class="num">2,318</td>
+                  <td class="num">2,300</td>
+                  <td class="num">18</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">0.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>ducky.jesse</td>
+                  <td class="num">2,264</td>
+                  <td class="num">2,000</td>
+                  <td class="num">29</td>
+                  <td>9</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">1.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>gus_piyathida</td>
+                  <td class="num">2,180</td>
+                  <td class="num">1,400</td>
+                  <td class="num">16</td>
+                  <td>3</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>mean.tita</td>
+                  <td class="num">2,152</td>
+                  <td class="num">2,100</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.33%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>littlebeerby</td>
+                  <td class="num">2,104</td>
+                  <td class="num">1,200</td>
+                  <td class="num">16</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>rinya.pmtt</td>
+                  <td class="num">1,895</td>
+                  <td class="num">1,100</td>
+                  <td class="num">34</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.90%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>chompinx</td>
+                  <td class="num">1,715</td>
+                  <td class="num">1,600</td>
+                  <td class="num">23</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">1.87%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>iahturmos__</td>
+                  <td class="num">1,643</td>
+                  <td class="num">1,400</td>
+                  <td class="num">48</td>
+                  <td>8</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td class="er">4.75%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>see.charinn</td>
+                  <td class="num">1,555</td>
+                  <td class="num">888</td>
+                  <td class="num">29</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">2.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>carrotreview</td>
+                  <td class="num">1,522</td>
+                  <td class="num">1,300</td>
+                  <td class="num">79</td>
+                  <td>7</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td class="er">6.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>pumpui_doullada</td>
+                  <td class="num">1,457</td>
+                  <td class="num">1,200</td>
+                  <td class="num">18</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">1.51%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>platyplaty.13</td>
+                  <td class="num">1,425</td>
+                  <td class="num">1,200</td>
+                  <td class="num">18</td>
+                  <td>1</td>
+                  <td>19</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>angoonkw</td>
+                  <td class="num">1,402</td>
+                  <td class="num">1,200</td>
+                  <td class="num">30</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>mean.tita</td>
+                  <td class="num">1,400</td>
+                  <td class="num">879</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.07%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>ctxxn_</td>
+                  <td class="num">1,372</td>
+                  <td class="num">808</td>
+                  <td class="num">20</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.04%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>nannieeii</td>
+                  <td class="num">1,371</td>
+                  <td class="num">1,100</td>
+                  <td class="num">18</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">1.75%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>grapeess</td>
+                  <td class="num">1,351</td>
+                  <td class="num">1,100</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.33%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>gungging__g</td>
+                  <td class="num">1,343</td>
+                  <td class="num">1,000</td>
+                  <td class="num">40</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>care_unna</td>
+                  <td class="num">1,264</td>
+                  <td class="num">1,000</td>
+                  <td class="num">46</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">3.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>kktxx</td>
+                  <td class="num">1,254</td>
+                  <td class="num">956</td>
+                  <td class="num">22</td>
+                  <td>1</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.79%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>mayyyuan</td>
+                  <td class="num">1,244</td>
+                  <td class="num">783</td>
+                  <td class="num">27</td>
+                  <td>10</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">3.38%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>acafeinmemories</td>
+                  <td class="num">1,164</td>
+                  <td class="num">695</td>
+                  <td class="num">11</td>
+                  <td>2</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">1.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>dish.is.dietfood</td>
+                  <td class="num">1,149</td>
+                  <td class="num">1,100</td>
+                  <td class="num">11</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.22%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>ppp_091</td>
+                  <td class="num">1,073</td>
+                  <td class="num">924</td>
+                  <td class="num">13</td>
+                  <td>1</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>graphic.review</td>
+                  <td class="num">1,068</td>
+                  <td class="num">914</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.59%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>napawanj</td>
+                  <td class="num">943</td>
+                  <td class="num">663</td>
+                  <td class="num">30</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.39%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>louise_ory</td>
+                  <td class="num">938</td>
+                  <td class="num">688</td>
+                  <td class="num">26</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.09%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>usedbywpr</td>
+                  <td class="num">908</td>
+                  <td class="num">905</td>
+                  <td class="num">21</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">2.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>m1ntmk</td>
+                  <td class="num">805</td>
+                  <td class="num">734</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.85%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>kittyivy_</td>
+                  <td class="num">438</td>
+                  <td class="num">354</td>
+                  <td class="num">31</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">8.90%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>ppinht</td>
+                  <td class="num">425</td>
+                  <td class="num">367</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.35%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>pimmood_</td>
+                  <td class="num">404</td>
+                  <td class="num">291</td>
+                  <td class="num">10</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">5.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>gimjipingping</td>
+                  <td class="num">349</td>
+                  <td class="num">314</td>
+                  <td class="num">58</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">16.62%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>ccatchuck</td>
+                  <td class="num">343</td>
+                  <td class="num">297</td>
+                  <td class="num">14</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td>usedbywpr</td>
+                  <td class="num">321</td>
+                  <td class="num">145</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>runpreeyaa</td>
+                  <td class="num">237</td>
+                  <td class="num">198</td>
+                  <td class="num">9</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.80%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td>wherepago</td>
+                  <td class="num">150</td>
+                  <td class="num">126</td>
+                  <td class="num">9</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.00%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="reel-table-all" class="table-panel">
+      <div class="table-panel-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Campaign</th><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/napawanj" target="_blank" rel="noopener noreferrer">napawanj</a></td>
+                  <td class="num">18,063</td>
+                  <td class="num">377</td>
+                  <td class="num">144</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.80%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></td>
+                  <td class="num">10,529</td>
+                  <td class="num">2,227</td>
+                  <td class="num">316</td>
+                  <td>6</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td class="er">3.12%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></td>
+                  <td class="num">4,462</td>
+                  <td class="num">2,693</td>
+                  <td class="num">155</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">3.88%</td>
+                  <td><span class="tag tag-above">👁️ ✅ Above Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></td>
+                  <td class="num">4,145</td>
+                  <td class="num">3,037</td>
+                  <td class="num">302</td>
+                  <td>7</td>
+                  <td>18</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">8.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/care_unna" target="_blank" rel="noopener noreferrer">care_unna</a></td>
+                  <td class="num">2,487</td>
+                  <td class="num">1,474</td>
+                  <td class="num">0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">0.40%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
+                  <td class="num">2,005</td>
+                  <td class="num">1,360</td>
+                  <td class="num">0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
+                  <td class="num">1,996</td>
+                  <td class="num">1,567</td>
+                  <td class="num">83</td>
+                  <td>6</td>
+                  <td>14</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">5.41%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/rinya.pmtt" target="_blank" rel="noopener noreferrer">rinya.pmtt</a></td>
+                  <td class="num">1,939</td>
+                  <td class="num">903</td>
+                  <td class="num">67</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">3.61%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/grapeess" target="_blank" rel="noopener noreferrer">grapeess</a></td>
+                  <td class="num">1,936</td>
+                  <td class="num">1,571</td>
+                  <td class="num">54</td>
+                  <td>0</td>
+                  <td>15</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td class="er">3.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></td>
+                  <td class="num">1,917</td>
+                  <td class="num">918</td>
+                  <td class="num">46</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.56%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/angoonkw" target="_blank" rel="noopener noreferrer">angoonkw</a></td>
+                  <td class="num">1,442</td>
+                  <td class="num">816</td>
+                  <td class="num">68</td>
+                  <td>1</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td class="er">5.34%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/iahturmos__" target="_blank" rel="noopener noreferrer">iahturmos__</a></td>
+                  <td class="num">1,414</td>
+                  <td class="num">436</td>
+                  <td class="num">33</td>
+                  <td>4</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/ctxxn_" target="_blank" rel="noopener noreferrer">ctxxn_</a></td>
+                  <td class="num">1,261</td>
+                  <td class="num">639</td>
+                  <td class="num">33</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.85%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/graphic.review" target="_blank" rel="noopener noreferrer">graphic.review</a></td>
+                  <td class="num">1,183</td>
+                  <td class="num">584</td>
+                  <td class="num">215</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td class="er">18.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/kukkikpunnada" target="_blank" rel="noopener noreferrer">kukkikpunnada</a></td>
+                  <td class="num">1,140</td>
+                  <td class="num">547</td>
+                  <td class="num">24</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.28%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/ppinht" target="_blank" rel="noopener noreferrer">ppinht</a></td>
+                  <td class="num">1,130</td>
+                  <td class="num">604</td>
+                  <td class="num">51</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.78%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/usedbywpr" target="_blank" rel="noopener noreferrer">usedbywpr</a></td>
+                  <td class="num">1,084</td>
+                  <td class="num">521</td>
+                  <td class="num">21</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/usedbywpr" target="_blank" rel="noopener noreferrer">usedbywpr</a></td>
+                  <td class="num">983</td>
+                  <td class="num">465</td>
+                  <td class="num">20</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/kktxx" target="_blank" rel="noopener noreferrer">kktxx</a></td>
+                  <td class="num">899</td>
+                  <td class="num">486</td>
+                  <td class="num">40</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="er">5.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/oeyaei" target="_blank" rel="noopener noreferrer">oeyaei</a></td>
+                  <td class="num">832</td>
+                  <td class="num">461</td>
+                  <td class="num">0</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">1.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/aompkmdiary" target="_blank" rel="noopener noreferrer">aompkmdiary</a></td>
+                  <td class="num">812</td>
+                  <td class="num">597</td>
+                  <td class="num">69</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>14</td>
+                  <td>0</td>
+                  <td class="er">10.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/littlebeerby" target="_blank" rel="noopener noreferrer">littlebeerby</a></td>
+                  <td class="num">770</td>
+                  <td class="num">454</td>
+                  <td class="num">45</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">6.88%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
+                  <td class="num">768</td>
+                  <td class="num">247</td>
+                  <td class="num">30</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">4.82%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/see.charinn" target="_blank" rel="noopener noreferrer">see.charinn</a></td>
+                  <td class="num">760</td>
+                  <td class="num">286</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">5.53%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/gimjipingping" target="_blank" rel="noopener noreferrer">gimjipingping</a></td>
+                  <td class="num">759</td>
+                  <td class="num">395</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.45%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/runpreeyaa" target="_blank" rel="noopener noreferrer">runpreeyaa</a></td>
+                  <td class="num">696</td>
+                  <td class="num">451</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/any.anyavee" target="_blank" rel="noopener noreferrer">any.anyavee</a></td>
+                  <td class="num">666</td>
+                  <td class="num">469</td>
+                  <td class="num">33</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="er">6.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/pumpui_doullada" target="_blank" rel="noopener noreferrer">pumpui_doullada</a></td>
+                  <td class="num">659</td>
+                  <td class="num">546</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.12%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/ccatchuck" target="_blank" rel="noopener noreferrer">ccatchuck</a></td>
+                  <td class="num">637</td>
+                  <td class="num">335</td>
+                  <td class="num">19</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.14%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/jormorcute" target="_blank" rel="noopener noreferrer">jormorcute</a></td>
+                  <td class="num">587</td>
+                  <td class="num">291</td>
+                  <td class="num">20</td>
+                  <td>9</td>
+                  <td>4</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td class="er">6.64%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/ducky.jesse" target="_blank" rel="noopener noreferrer">ducky.jesse</a></td>
+                  <td class="num">515</td>
+                  <td class="num">316</td>
+                  <td class="num">24</td>
+                  <td>6</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">6.21%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/wherepago" target="_blank" rel="noopener noreferrer">wherepago</a></td>
+                  <td class="num">472</td>
+                  <td class="num">287</td>
+                  <td class="num">20</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">4.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
+                  <td class="num">434</td>
+                  <td class="num">251</td>
+                  <td class="num">28</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">8.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/gus_piyathida" target="_blank" rel="noopener noreferrer">gus_piyathida</a></td>
+                  <td class="num">426</td>
+                  <td class="num">305</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td class="er">4.46%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/m1ntmk" target="_blank" rel="noopener noreferrer">m1ntmk</a></td>
+                  <td class="num">423</td>
+                  <td class="num">163</td>
+                  <td class="num">18</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">5.91%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/chompinx" target="_blank" rel="noopener noreferrer">chompinx</a></td>
+                  <td class="num">403</td>
+                  <td class="num">275</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">3.23%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
+                  <td class="num">387</td>
+                  <td class="num">1,495</td>
+                  <td class="num">74</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td class="er">20.41%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/pimmood_" target="_blank" rel="noopener noreferrer">pimmood_</a></td>
+                  <td class="num">357</td>
+                  <td class="num">291</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td class="er">5.60%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/kengkyu.journey" target="_blank" rel="noopener noreferrer">kengkyu.journey</a></td>
+                  <td class="num">350</td>
+                  <td class="num">241</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">4.29%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/aummntww" target="_blank" rel="noopener noreferrer">aummntww</a></td>
+                  <td class="num">317</td>
+                  <td class="num">267</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">5.05%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/ppp_091" target="_blank" rel="noopener noreferrer">ppp_091</a></td>
+                  <td class="num">314</td>
+                  <td class="num">184</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.23%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/nannieeii" target="_blank" rel="noopener noreferrer">nannieeii</a></td>
+                  <td class="num">308</td>
+                  <td class="num">206</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.57%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/graphic.review" target="_blank" rel="noopener noreferrer">graphic.review</a></td>
+                  <td class="num">306</td>
+                  <td class="num">253</td>
+                  <td class="num">6</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/mean.tita" target="_blank" rel="noopener noreferrer">mean.tita</a></td>
+                  <td class="num">290</td>
+                  <td class="num">241</td>
+                  <td class="num">0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">0.34%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/mean.tita" target="_blank" rel="noopener noreferrer">mean.tita</a></td>
+                  <td class="num">279</td>
+                  <td class="num">219</td>
+                  <td class="num">0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">0.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/mayyyuan" target="_blank" rel="noopener noreferrer">mayyyuan</a></td>
+                  <td class="num">277</td>
+                  <td class="num">191</td>
+                  <td class="num">19</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.30%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/tu_story" target="_blank" rel="noopener noreferrer">tu_story</a></td>
+                  <td class="num">261</td>
+                  <td class="num">100</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">10.73%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/kittyivy_" target="_blank" rel="noopener noreferrer">kittyivy_</a></td>
+                  <td class="num">202</td>
+                  <td class="num">181</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">6.93%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Special Event</td>
+                  <td><a href="https://instagram.com/platyplaty.13" target="_blank" rel="noopener noreferrer">platyplaty.13</a></td>
+                  <td class="num">198</td>
+                  <td class="num">129</td>
+                  <td class="num">2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.02%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/carrotreview" target="_blank" rel="noopener noreferrer">carrotreview</a></td>
+                  <td class="num">115</td>
+                  <td class="num">72</td>
+                  <td class="num">5</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.35%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/designcostan" target="_blank" rel="noopener noreferrer">designcostan</a></td>
+                  <td class="num">99</td>
+                  <td class="num">79</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">4.04%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/oilchanaporn" target="_blank" rel="noopener noreferrer">oilchanaporn</a></td>
+                  <td class="num">94</td>
+                  <td class="num">65</td>
+                  <td class="num">4</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  <td>Molly Tea Halloween</td>
+                  <td><a href="https://instagram.com/acafeinmemories" target="_blank" rel="noopener noreferrer">acafeinmemories</a></td>
+                  <td class="num">74</td>
+                  <td class="num">65</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.70%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    
+  </div>
+</div>
+</div>
+<div class="campaign-panel" data-campaign="molly-tea-halloween">
+<div class="report-header">
+  <div class="header-tag">KOL Campaign Report</div>
+  <div class="header-title">Molly Tea</div>
+  <div class="header-sub">Molly Tea Halloween</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
+    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">27</span></div>
+    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">27</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">Campaign Overview</div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div><div class="stat-num">121,220</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across 27 KOL rows with TikTok data · Reach 84,126</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div><div class="stat-num">30,609</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 27 KOL rows with Reels data · Reach 13,402</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">151,829</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts · Reach 97,528</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-molly-tea-halloween">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-molly-tea-halloween">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-molly-tea-halloween">Post Stats</button></div><div id="tiktok-tooltip-molly-tea-halloween" class="mobile-tooltip"><strong>TikTok</strong><br>Views: 121,220<br>Reach: 84,126<br>Engagement: 1,825</div><div id="reel-tooltip-molly-tea-halloween" class="mobile-tooltip"><strong>Reels</strong><br>Views: 30,609<br>Reach: 13,402<br>Engagement: 1,038</div><div id="post-tooltip-molly-tea-halloween" class="mobile-tooltip"><strong>Posts</strong><br>Views: 0<br>Engagement: 0</div></div>
+    </div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Engagement</div><div class="stat-num">1,825</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 1,373 · Comments 175 · Shares 138 · Reposts 0 · Saves 139</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reel Engagement</div><div class="stat-num">1,038</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 914 · Comments 42 · Shares 36 · Reposts 37 · Saves 9</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">2,863</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">TikTok + Reel + Post Engagement</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Performance by Channel</div>
+    <div class="compare-grid">
+      <div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">121,220</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">84,126</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">1,373</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">175</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">138</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">0</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">139</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">4,490</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">3,116</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">3.18%</span></div>
+      </div>
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">30,609</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">13,402</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">914</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">42</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">36</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">37</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">9</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">1,134</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">496</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">4.24%</span></div>
+      </div></div>
+    <div class="verdict"><strong>Key Takeaway:</strong> TikTok led views by <strong>90,611</strong> (296.03% ahead of the next channel), while Reels delivered stronger proportional engagement per view on average.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top 3 Highlights</div>
+    <div class="compare-grid"><div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">64,500</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">designcostan</span><span class="highlight-num">7,673</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">graphic.review</span><span class="highlight-num">7,401</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">42,600</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">designcostan</span><span class="highlight-num">5,100</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">graphic.review</span><span class="highlight-num">4,900</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">tu_story</span><span class="highlight-num">67</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">oilchanaporn</span><span class="highlight-num">28</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">17</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">nadia_ndi</span><span class="highlight-num">30</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">oilchanaporn</span><span class="highlight-num">28</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">any.anyavee</span><span class="highlight-num">11</span></div></div></div>
+      </div><div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></span><span class="highlight-num">10,529</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></span><span class="highlight-num">2,005</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/rinya.pmtt" target="_blank" rel="noopener noreferrer">rinya.pmtt</a></span><span class="highlight-num">1,939</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></span><span class="highlight-num">2,227</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/grapeess" target="_blank" rel="noopener noreferrer">grapeess</a></span><span class="highlight-num">1,571</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></span><span class="highlight-num">1,360</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/jormorcute" target="_blank" rel="noopener noreferrer">jormorcute</a></span><span class="highlight-num">9</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></span><span class="highlight-num">6</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></span><span class="highlight-num">5</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/grapeess" target="_blank" rel="noopener noreferrer">grapeess</a></span><span class="highlight-num">3</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/any.anyavee" target="_blank" rel="noopener noreferrer">any.anyavee</a></span><span class="highlight-num">2</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/kktxx" target="_blank" rel="noopener noreferrer">kktxx</a></span><span class="highlight-num">2</span></div></div></div>
+      </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KOL Performance Tables</div>
+    <div class="appendix-note">
+      <strong>TikTok Benchmarks:</strong><br>
+      Views Mean 4,490, SD 11,922<br>
+      Reach Mean 3,116, SD 7,848<br>
+      ER Mean 3.18%, SD 3.14%<br><br>
+      <strong>Reels Benchmarks:</strong><br>
+      Views Mean 1,134, SD 1,939<br>
+      Reach Mean 496, SD 501<br>
+      ER Mean 4.24%, SD 2.48%<br><br>
+      
+    </div>
+    <div class="table-tabs">
+      <button type="button" class="table-tab-btn active" data-tab-target="tiktok-table-molly-tea-halloween"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</button>
+      <button type="button" class="table-tab-btn" data-tab-target="reel-table-molly-tea-halloween"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</button>
+      
+    </div>
+    <div id="tiktok-table-molly-tea-halloween" class="table-panel active">
+      <div class="table-panel-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  
+                  <td>nadia_ndi</td>
+                  <td class="num">64,500</td>
+                  <td class="num">42,600</td>
+                  <td class="num">458</td>
+                  <td>17</td>
+                  <td>22</td>
+                  <td>0</td>
+                  <td>30</td>
+                  <td class="er">0.82%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>designcostan</td>
+                  <td class="num">7,673</td>
+                  <td class="num">5,100</td>
+                  <td class="num">69</td>
+                  <td>11</td>
+                  <td>17</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">1.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>graphic.review</td>
+                  <td class="num">7,401</td>
+                  <td class="num">4,900</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">0.16%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>any.anyavee</td>
+                  <td class="num">6,438</td>
+                  <td class="num">4,300</td>
+                  <td class="num">153</td>
+                  <td>2</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td class="er">2.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>oilchanaporn</td>
+                  <td class="num">2,902</td>
+                  <td class="num">2,300</td>
+                  <td class="num">36</td>
+                  <td>28</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>28</td>
+                  <td class="er">3.38%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>kukkikpunnada</td>
+                  <td class="num">2,731</td>
+                  <td class="num">1,900</td>
+                  <td class="num">51</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">2.16%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>vousbeemvoyez</td>
+                  <td class="num">2,500</td>
+                  <td class="num">2,300</td>
+                  <td class="num">14</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>tu_story</td>
+                  <td class="num">2,397</td>
+                  <td class="num">2,400</td>
+                  <td class="num">68</td>
+                  <td>67</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">6.30%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>jormorcute</td>
+                  <td class="num">2,383</td>
+                  <td class="num">1,800</td>
+                  <td class="num">50</td>
+                  <td>8</td>
+                  <td>12</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td class="er">3.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>mean.tita</td>
+                  <td class="num">2,152</td>
+                  <td class="num">2,100</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.33%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>littlebeerby</td>
+                  <td class="num">2,104</td>
+                  <td class="num">1,200</td>
+                  <td class="num">16</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>rinya.pmtt</td>
+                  <td class="num">1,895</td>
+                  <td class="num">1,100</td>
+                  <td class="num">34</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.90%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>iahturmos__</td>
+                  <td class="num">1,643</td>
+                  <td class="num">1,400</td>
+                  <td class="num">48</td>
+                  <td>8</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td class="er">4.75%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>see.charinn</td>
+                  <td class="num">1,555</td>
+                  <td class="num">888</td>
+                  <td class="num">29</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">2.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>carrotreview</td>
+                  <td class="num">1,522</td>
+                  <td class="num">1,300</td>
+                  <td class="num">79</td>
+                  <td>7</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td class="er">6.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>ctxxn_</td>
+                  <td class="num">1,372</td>
+                  <td class="num">808</td>
+                  <td class="num">20</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.04%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>grapeess</td>
+                  <td class="num">1,351</td>
+                  <td class="num">1,100</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.33%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>kktxx</td>
+                  <td class="num">1,254</td>
+                  <td class="num">956</td>
+                  <td class="num">22</td>
+                  <td>1</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.79%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>mayyyuan</td>
+                  <td class="num">1,244</td>
+                  <td class="num">783</td>
+                  <td class="num">27</td>
+                  <td>10</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">3.38%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>acafeinmemories</td>
+                  <td class="num">1,164</td>
+                  <td class="num">695</td>
+                  <td class="num">11</td>
+                  <td>2</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">1.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>dish.is.dietfood</td>
+                  <td class="num">1,149</td>
+                  <td class="num">1,100</td>
+                  <td class="num">11</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.22%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>ppp_091</td>
+                  <td class="num">1,073</td>
+                  <td class="num">924</td>
+                  <td class="num">13</td>
+                  <td>1</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>louise_ory</td>
+                  <td class="num">938</td>
+                  <td class="num">688</td>
+                  <td class="num">26</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.09%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>m1ntmk</td>
+                  <td class="num">805</td>
+                  <td class="num">734</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.85%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>pimmood_</td>
+                  <td class="num">404</td>
+                  <td class="num">291</td>
+                  <td class="num">10</td>
+                  <td>0</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">5.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>gimjipingping</td>
+                  <td class="num">349</td>
+                  <td class="num">314</td>
+                  <td class="num">58</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">16.62%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>usedbywpr</td>
+                  <td class="num">321</td>
+                  <td class="num">145</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.36%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="reel-table-molly-tea-halloween" class="table-panel">
+      <div class="table-panel-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  
+                  <td><a href="https://instagram.com/nadia_ndi" target="_blank" rel="noopener noreferrer">nadia_ndi</a></td>
+                  <td class="num">10,529</td>
+                  <td class="num">2,227</td>
+                  <td class="num">316</td>
+                  <td>6</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td class="er">3.12%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
+                  <td class="num">2,005</td>
+                  <td class="num">1,360</td>
+                  <td class="num">0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.10%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/rinya.pmtt" target="_blank" rel="noopener noreferrer">rinya.pmtt</a></td>
+                  <td class="num">1,939</td>
+                  <td class="num">903</td>
+                  <td class="num">67</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">3.61%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/grapeess" target="_blank" rel="noopener noreferrer">grapeess</a></td>
+                  <td class="num">1,936</td>
+                  <td class="num">1,571</td>
+                  <td class="num">54</td>
+                  <td>0</td>
+                  <td>15</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td class="er">3.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></td>
+                  <td class="num">1,917</td>
+                  <td class="num">918</td>
+                  <td class="num">46</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.56%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/iahturmos__" target="_blank" rel="noopener noreferrer">iahturmos__</a></td>
+                  <td class="num">1,414</td>
+                  <td class="num">436</td>
+                  <td class="num">33</td>
+                  <td>4</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.97%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/ctxxn_" target="_blank" rel="noopener noreferrer">ctxxn_</a></td>
+                  <td class="num">1,261</td>
+                  <td class="num">639</td>
+                  <td class="num">33</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.85%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/kukkikpunnada" target="_blank" rel="noopener noreferrer">kukkikpunnada</a></td>
+                  <td class="num">1,140</td>
+                  <td class="num">547</td>
+                  <td class="num">24</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.28%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/usedbywpr" target="_blank" rel="noopener noreferrer">usedbywpr</a></td>
+                  <td class="num">983</td>
+                  <td class="num">465</td>
+                  <td class="num">20</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.03%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/kktxx" target="_blank" rel="noopener noreferrer">kktxx</a></td>
+                  <td class="num">899</td>
+                  <td class="num">486</td>
+                  <td class="num">40</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="er">5.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/littlebeerby" target="_blank" rel="noopener noreferrer">littlebeerby</a></td>
+                  <td class="num">770</td>
+                  <td class="num">454</td>
+                  <td class="num">45</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">6.88%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/see.charinn" target="_blank" rel="noopener noreferrer">see.charinn</a></td>
+                  <td class="num">760</td>
+                  <td class="num">286</td>
+                  <td class="num">41</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">5.53%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/gimjipingping" target="_blank" rel="noopener noreferrer">gimjipingping</a></td>
+                  <td class="num">759</td>
+                  <td class="num">395</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.45%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/any.anyavee" target="_blank" rel="noopener noreferrer">any.anyavee</a></td>
+                  <td class="num">666</td>
+                  <td class="num">469</td>
+                  <td class="num">33</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td class="er">6.01%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/jormorcute" target="_blank" rel="noopener noreferrer">jormorcute</a></td>
+                  <td class="num">587</td>
+                  <td class="num">291</td>
+                  <td class="num">20</td>
+                  <td>9</td>
+                  <td>4</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td class="er">6.64%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
+                  <td class="num">434</td>
+                  <td class="num">251</td>
+                  <td class="num">28</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">8.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/m1ntmk" target="_blank" rel="noopener noreferrer">m1ntmk</a></td>
+                  <td class="num">423</td>
+                  <td class="num">163</td>
+                  <td class="num">18</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">5.91%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/pimmood_" target="_blank" rel="noopener noreferrer">pimmood_</a></td>
+                  <td class="num">357</td>
+                  <td class="num">291</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td class="er">5.60%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/ppp_091" target="_blank" rel="noopener noreferrer">ppp_091</a></td>
+                  <td class="num">314</td>
+                  <td class="num">184</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.23%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/graphic.review" target="_blank" rel="noopener noreferrer">graphic.review</a></td>
+                  <td class="num">306</td>
+                  <td class="num">253</td>
+                  <td class="num">6</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.96%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/mean.tita" target="_blank" rel="noopener noreferrer">mean.tita</a></td>
+                  <td class="num">290</td>
+                  <td class="num">241</td>
+                  <td class="num">0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">0.34%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/mayyyuan" target="_blank" rel="noopener noreferrer">mayyyuan</a></td>
+                  <td class="num">277</td>
+                  <td class="num">191</td>
+                  <td class="num">19</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">8.30%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/tu_story" target="_blank" rel="noopener noreferrer">tu_story</a></td>
+                  <td class="num">261</td>
+                  <td class="num">100</td>
+                  <td class="num">25</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">10.73%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/carrotreview" target="_blank" rel="noopener noreferrer">carrotreview</a></td>
+                  <td class="num">115</td>
+                  <td class="num">72</td>
+                  <td class="num">5</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.35%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/designcostan" target="_blank" rel="noopener noreferrer">designcostan</a></td>
+                  <td class="num">99</td>
+                  <td class="num">79</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">4.04%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/oilchanaporn" target="_blank" rel="noopener noreferrer">oilchanaporn</a></td>
+                  <td class="num">94</td>
+                  <td class="num">65</td>
+                  <td class="num">4</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">5.32%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/acafeinmemories" target="_blank" rel="noopener noreferrer">acafeinmemories</a></td>
+                  <td class="num">74</td>
+                  <td class="num">65</td>
+                  <td class="num">2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.70%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    
+  </div>
+</div>
+</div>
+<div class="campaign-panel" data-campaign="molly-tea-special-event">
+<div class="report-header">
+  <div class="header-tag">KOL Campaign Report</div>
+  <div class="header-title">Molly Tea</div>
+  <div class="header-sub">Molly Tea Special Event</div>
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Platform</span><span class="meta-value">Instagram</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">All Done ✓</span></div>
+    <div class="meta-item"><span class="meta-label">TikTok Rows</span><span class="meta-value">27</span></div>
+    <div class="meta-item"><span class="meta-label">Reel Rows</span><span class="meta-value">26</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-title">Campaign Overview</div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div><div class="stat-num">172,982</div><div class="stat-label">Total TikTok Views</div><div class="stat-sublabel">Across 27 KOL rows with TikTok data · Reach 155,403</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div><div class="stat-num">44,253</div><div class="stat-label">Total Reel Views</div><div class="stat-sublabel">Across 26 KOL rows with Reels data · Reach 18,231</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">📊 Total</div><div class="stat-num" style="color:var(--zus-blue)">217,235</div><div class="stat-label">Combined Total Views</div><div class="stat-sublabel">TikTok + Reels + Posts · Reach 173,634</div><div class="mobile-tooltip-triggers"><button type="button" class="mobile-tooltip-btn" data-tooltip-target="tiktok-tooltip-molly-tea-special-event">TikTok Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="reel-tooltip-molly-tea-special-event">Reel Stats</button><button type="button" class="mobile-tooltip-btn" data-tooltip-target="post-tooltip-molly-tea-special-event">Post Stats</button></div><div id="tiktok-tooltip-molly-tea-special-event" class="mobile-tooltip"><strong>TikTok</strong><br>Views: 172,982<br>Reach: 155,403<br>Engagement: 2,870</div><div id="reel-tooltip-molly-tea-special-event" class="mobile-tooltip"><strong>Reels</strong><br>Views: 44,253<br>Reach: 18,231<br>Engagement: 1,555</div><div id="post-tooltip-molly-tea-special-event" class="mobile-tooltip"><strong>Posts</strong><br>Views: 0<br>Engagement: 0</div></div>
+    </div>
+    <div class="overview-grid overview-grid-2">
+      
+      <div class="stat-card stat-card-tiktok"><div class="stat-badge badge-tiktok"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Engagement</div><div class="stat-num">2,870</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 2,251 · Comments 97 · Shares 348 · Reposts 0 · Saves 174</div></div>
+      
+      <div class="stat-card stat-card-reel"><div class="stat-badge badge-reel"><img class="platform-icon" src="assets/instagram.png" alt=""> Reel Engagement</div><div class="stat-num">1,555</div><div class="stat-label">Likes + Comments + Shares + Reposts + Saves</div><div class="stat-sublabel">Likes 1,373 · Comments 41 · Shares 73 · Reposts 63 · Saves 5</div></div>
+      
+      
+      <div class="stat-card stat-card-total"><div class="stat-badge badge-total">🔥 Combined</div><div class="stat-num" style="color:var(--zus-blue)">4,425</div><div class="stat-label">Combined Engagement</div><div class="stat-sublabel">TikTok + Reel + Post Engagement</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Performance by Channel</div>
+    <div class="compare-grid">
+      <div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">172,982</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">155,403</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">2,251</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">97</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">348</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">0</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">174</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">6,407</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">5,756</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">2.90%</span></div>
+      </div>
+      <div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="compare-row"><span class="compare-row-label">👁️ Total Views</span><span class="compare-row-val">44,253</span></div>
+        <div class="compare-row"><span class="compare-row-label">📡 Total Reach</span><span class="compare-row-val">18,231</span></div>
+        <div class="compare-row"><span class="compare-row-label">❤️ Total Likes</span><span class="compare-row-val">1,373</span></div>
+        <div class="compare-row"><span class="compare-row-label">💬 Total Comments</span><span class="compare-row-val">41</span></div>
+        <div class="compare-row"><span class="compare-row-label">↗️ Total Shares</span><span class="compare-row-val">73</span></div>
+        <div class="compare-row"><span class="compare-row-label">🔁 Total Reposts</span><span class="compare-row-val">63</span></div>
+        <div class="compare-row"><span class="compare-row-label">💾 Total Saves</span><span class="compare-row-val">5</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Views / KOL</span><span class="compare-row-val">1,702</span></div>
+        <div class="compare-row"><span class="compare-row-label">📊 Avg. Reach / KOL</span><span class="compare-row-val">701</span></div>
+        <div class="compare-row"><span class="compare-row-label">📈 Avg. Eng. Rate</span><span class="compare-row-val">5.21%</span></div>
+      </div></div>
+    <div class="verdict"><strong>Key Takeaway:</strong> TikTok led views by <strong>128,729</strong> (290.89% ahead of the next channel), while Reels delivered stronger proportional engagement per view on average.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top 3 Highlights</div>
+    <div class="compare-grid"><div class="compare-card tiktok">
+        <div class="compare-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">75,600</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">aummntww</span><span class="highlight-num">48,300</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">feel_wa</span><span class="highlight-num">5,636</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">67,600</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">aummntww</span><span class="highlight-num">46,700</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">feel_wa</span><span class="highlight-num">5,400</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">aompkmdiary</span><span class="highlight-num">22</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">oeyaei</span><span class="highlight-num">19</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">bommbammglow</span><span class="highlight-num">10</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user">louise_ory</span><span class="highlight-num">60</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user">aummntww</span><span class="highlight-num">31</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user">feel_wa</span><span class="highlight-num">31</span></div></div></div>
+      </div><div class="compare-card reels">
+        <div class="compare-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</div>
+        <div class="highlight-metric"><div class="highlight-metric-label">👁️ Most Viewed</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/napawanj" target="_blank" rel="noopener noreferrer">napawanj</a></span><span class="highlight-num">18,063</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></span><span class="highlight-num">4,462</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></span><span class="highlight-num">4,145</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">📡 Highest Reach</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></span><span class="highlight-num">3,037</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></span><span class="highlight-num">2,693</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></span><span class="highlight-num">1,567</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💬 Most Commented</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/oeyaei" target="_blank" rel="noopener noreferrer">oeyaei</a></span><span class="highlight-num">8</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></span><span class="highlight-num">7</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></span><span class="highlight-num">6</span></div></div></div><div class="highlight-metric"><div class="highlight-metric-label">💾 Most Saved</div><div class="highlight-top3"><div class="highlight-entry"><span class="highlight-rank rank-1">1</span><span class="highlight-user"><a href="https://instagram.com/angoonkw" target="_blank" rel="noopener noreferrer">angoonkw</a></span><span class="highlight-num">2</span></div><div class="highlight-entry"><span class="highlight-rank rank-2">2</span><span class="highlight-user"><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></span><span class="highlight-num">1</span></div><div class="highlight-entry"><span class="highlight-rank rank-3">3</span><span class="highlight-user"><a href="https://instagram.com/gus_piyathida" target="_blank" rel="noopener noreferrer">gus_piyathida</a></span><span class="highlight-num">1</span></div></div></div>
+      </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KOL Performance Tables</div>
+    <div class="appendix-note">
+      <strong>TikTok Benchmarks:</strong><br>
+      Views Mean 6,407, SD 16,216<br>
+      Reach Mean 5,756, SD 14,876<br>
+      ER Mean 2.90%, SD 2.22%<br><br>
+      <strong>Reels Benchmarks:</strong><br>
+      Views Mean 1,702, SD 3,447<br>
+      Reach Mean 701, SD 739<br>
+      ER Mean 5.21%, SD 4.76%<br><br>
+      
+    </div>
+    <div class="table-tabs">
+      <button type="button" class="table-tab-btn active" data-tab-target="tiktok-table-molly-tea-special-event"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok</button>
+      <button type="button" class="table-tab-btn" data-tab-target="reel-table-molly-tea-special-event"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels</button>
+      
+    </div>
+    <div id="tiktok-table-molly-tea-special-event" class="table-panel active">
+      <div class="table-panel-title" style="color:var(--tiktok)"><img class="platform-icon" src="assets/tiktok.png" alt=""> TikTok Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  
+                  <td>louise_ory</td>
+                  <td class="num">75,600</td>
+                  <td class="num">67,600</td>
+                  <td class="num">838</td>
+                  <td>4</td>
+                  <td>82</td>
+                  <td>0</td>
+                  <td>60</td>
+                  <td class="er">1.30%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>aummntww</td>
+                  <td class="num">48,300</td>
+                  <td class="num">46,700</td>
+                  <td class="num">359</td>
+                  <td>3</td>
+                  <td>28</td>
+                  <td>0</td>
+                  <td>31</td>
+                  <td class="er">0.87%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>feel_wa</td>
+                  <td class="num">5,636</td>
+                  <td class="num">5,400</td>
+                  <td class="num">424</td>
+                  <td>4</td>
+                  <td>101</td>
+                  <td>0</td>
+                  <td>31</td>
+                  <td class="er">9.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>kengkyu.journey</td>
+                  <td class="num">5,214</td>
+                  <td class="num">5,100</td>
+                  <td class="num">17</td>
+                  <td>6</td>
+                  <td>21</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td class="er">0.98%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>aompkmdiary</td>
+                  <td class="num">5,145</td>
+                  <td class="num">3,100</td>
+                  <td class="num">86</td>
+                  <td>22</td>
+                  <td>4</td>
+                  <td>0</td>
+                  <td>6</td>
+                  <td class="er">2.29%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>bommbammglow</td>
+                  <td class="num">4,825</td>
+                  <td class="num">4,500</td>
+                  <td class="num">25</td>
+                  <td>10</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td class="er">0.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>dish.is.dietfood</td>
+                  <td class="num">2,935</td>
+                  <td class="num">2,400</td>
+                  <td class="num">49</td>
+                  <td>9</td>
+                  <td>38</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">3.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>oeyaei</td>
+                  <td class="num">2,676</td>
+                  <td class="num">1,900</td>
+                  <td class="num">45</td>
+                  <td>19</td>
+                  <td>27</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td class="er">3.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>vousbeemvoyez</td>
+                  <td class="num">2,318</td>
+                  <td class="num">2,300</td>
+                  <td class="num">18</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">0.86%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>ducky.jesse</td>
+                  <td class="num">2,264</td>
+                  <td class="num">2,000</td>
+                  <td class="num">29</td>
+                  <td>9</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">1.81%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>gus_piyathida</td>
+                  <td class="num">2,180</td>
+                  <td class="num">1,400</td>
+                  <td class="num">16</td>
+                  <td>3</td>
+                  <td>11</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">1.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>chompinx</td>
+                  <td class="num">1,715</td>
+                  <td class="num">1,600</td>
+                  <td class="num">23</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">1.87%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>pumpui_doullada</td>
+                  <td class="num">1,457</td>
+                  <td class="num">1,200</td>
+                  <td class="num">18</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">1.51%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>platyplaty.13</td>
+                  <td class="num">1,425</td>
+                  <td class="num">1,200</td>
+                  <td class="num">18</td>
+                  <td>1</td>
+                  <td>19</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.67%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>angoonkw</td>
+                  <td class="num">1,402</td>
+                  <td class="num">1,200</td>
+                  <td class="num">30</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.43%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>mean.tita</td>
+                  <td class="num">1,400</td>
+                  <td class="num">879</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.07%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>nannieeii</td>
+                  <td class="num">1,371</td>
+                  <td class="num">1,100</td>
+                  <td class="num">18</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>5</td>
+                  <td class="er">1.75%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>gungging__g</td>
+                  <td class="num">1,343</td>
+                  <td class="num">1,000</td>
+                  <td class="num">40</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">3.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>care_unna</td>
+                  <td class="num">1,264</td>
+                  <td class="num">1,000</td>
+                  <td class="num">46</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">3.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>graphic.review</td>
+                  <td class="num">1,068</td>
+                  <td class="num">914</td>
+                  <td class="num">15</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.59%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>napawanj</td>
+                  <td class="num">943</td>
+                  <td class="num">663</td>
+                  <td class="num">30</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.39%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>usedbywpr</td>
+                  <td class="num">908</td>
+                  <td class="num">905</td>
+                  <td class="num">21</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">2.42%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>kittyivy_</td>
+                  <td class="num">438</td>
+                  <td class="num">354</td>
+                  <td class="num">31</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td class="er">8.90%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>ppinht</td>
+                  <td class="num">425</td>
+                  <td class="num">367</td>
+                  <td class="num">8</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td class="er">2.35%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>ccatchuck</td>
+                  <td class="num">343</td>
+                  <td class="num">297</td>
+                  <td class="num">14</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.37%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>runpreeyaa</td>
+                  <td class="num">237</td>
+                  <td class="num">198</td>
+                  <td class="num">9</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.80%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td>wherepago</td>
+                  <td class="num">150</td>
+                  <td class="num">126</td>
+                  <td class="num">9</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">6.00%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="reel-table-molly-tea-special-event" class="table-panel">
+      <div class="table-panel-title" style="color:var(--reel)"><img class="platform-icon" src="assets/instagram.png" alt=""> Reels Performance Table</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>KOL Username</th><th>Views</th><th>Reach</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reposts</th><th>Saves</th><th>ER %</th><th>👁️ Views Tag</th><th>👍 ER Tag</th></tr></thead>
+          <tbody>
+                <tr>
+                  
+                  <td><a href="https://instagram.com/napawanj" target="_blank" rel="noopener noreferrer">napawanj</a></td>
+                  <td class="num">18,063</td>
+                  <td class="num">377</td>
+                  <td class="num">144</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">0.80%</td>
+                  <td><span class="tag tag-outstanding">👁️ 🌟 Outstanding</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/louise_ory" target="_blank" rel="noopener noreferrer">louise_ory</a></td>
+                  <td class="num">4,462</td>
+                  <td class="num">2,693</td>
+                  <td class="num">155</td>
+                  <td>0</td>
+                  <td>11</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">3.88%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/feel_wa" target="_blank" rel="noopener noreferrer">feel_wa</a></td>
+                  <td class="num">4,145</td>
+                  <td class="num">3,037</td>
+                  <td class="num">302</td>
+                  <td>7</td>
+                  <td>18</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">8.06%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/care_unna" target="_blank" rel="noopener noreferrer">care_unna</a></td>
+                  <td class="num">2,487</td>
+                  <td class="num">1,474</td>
+                  <td class="num">0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>7</td>
+                  <td>0</td>
+                  <td class="er">0.40%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-low">👍 🔸 Low Engagement</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/dish.is.dietfood" target="_blank" rel="noopener noreferrer">dish.is.dietfood</a></td>
+                  <td class="num">1,996</td>
+                  <td class="num">1,567</td>
+                  <td class="num">83</td>
+                  <td>6</td>
+                  <td>14</td>
+                  <td>5</td>
+                  <td>0</td>
+                  <td class="er">5.41%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/angoonkw" target="_blank" rel="noopener noreferrer">angoonkw</a></td>
+                  <td class="num">1,442</td>
+                  <td class="num">816</td>
+                  <td class="num">68</td>
+                  <td>1</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td class="er">5.34%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/graphic.review" target="_blank" rel="noopener noreferrer">graphic.review</a></td>
+                  <td class="num">1,183</td>
+                  <td class="num">584</td>
+                  <td class="num">215</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td class="er">18.77%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/ppinht" target="_blank" rel="noopener noreferrer">ppinht</a></td>
+                  <td class="num">1,130</td>
+                  <td class="num">604</td>
+                  <td class="num">51</td>
+                  <td>0</td>
+                  <td>3</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">4.78%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/usedbywpr" target="_blank" rel="noopener noreferrer">usedbywpr</a></td>
+                  <td class="num">1,084</td>
+                  <td class="num">521</td>
+                  <td class="num">21</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">1.94%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/oeyaei" target="_blank" rel="noopener noreferrer">oeyaei</a></td>
+                  <td class="num">832</td>
+                  <td class="num">461</td>
+                  <td class="num">0</td>
+                  <td>8</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">1.20%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/aompkmdiary" target="_blank" rel="noopener noreferrer">aompkmdiary</a></td>
+                  <td class="num">812</td>
+                  <td class="num">597</td>
+                  <td class="num">69</td>
+                  <td>0</td>
+                  <td>4</td>
+                  <td>14</td>
+                  <td>0</td>
+                  <td class="er">10.71%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-engaging">👍 ✅ Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/vousbeemvoyez" target="_blank" rel="noopener noreferrer">vousbeemvoyez</a></td>
+                  <td class="num">768</td>
+                  <td class="num">247</td>
+                  <td class="num">30</td>
+                  <td>4</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">4.82%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/runpreeyaa" target="_blank" rel="noopener noreferrer">runpreeyaa</a></td>
+                  <td class="num">696</td>
+                  <td class="num">451</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">2.44%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/pumpui_doullada" target="_blank" rel="noopener noreferrer">pumpui_doullada</a></td>
+                  <td class="num">659</td>
+                  <td class="num">546</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">2.12%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/ccatchuck" target="_blank" rel="noopener noreferrer">ccatchuck</a></td>
+                  <td class="num">637</td>
+                  <td class="num">335</td>
+                  <td class="num">19</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.14%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/ducky.jesse" target="_blank" rel="noopener noreferrer">ducky.jesse</a></td>
+                  <td class="num">515</td>
+                  <td class="num">316</td>
+                  <td class="num">24</td>
+                  <td>6</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">6.21%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/wherepago" target="_blank" rel="noopener noreferrer">wherepago</a></td>
+                  <td class="num">472</td>
+                  <td class="num">287</td>
+                  <td class="num">20</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">4.66%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/gus_piyathida" target="_blank" rel="noopener noreferrer">gus_piyathida</a></td>
+                  <td class="num">426</td>
+                  <td class="num">305</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td class="er">4.46%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/chompinx" target="_blank" rel="noopener noreferrer">chompinx</a></td>
+                  <td class="num">403</td>
+                  <td class="num">275</td>
+                  <td class="num">12</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">3.23%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/gungging__g" target="_blank" rel="noopener noreferrer">gungging__g</a></td>
+                  <td class="num">387</td>
+                  <td class="num">1,495</td>
+                  <td class="num">74</td>
+                  <td>0</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td class="er">20.41%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-highly">👍 🌟 Highly Engaging</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/kengkyu.journey" target="_blank" rel="noopener noreferrer">kengkyu.journey</a></td>
+                  <td class="num">350</td>
+                  <td class="num">241</td>
+                  <td class="num">14</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">4.29%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/aummntww" target="_blank" rel="noopener noreferrer">aummntww</a></td>
+                  <td class="num">317</td>
+                  <td class="num">267</td>
+                  <td class="num">13</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td class="er">5.05%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/nannieeii" target="_blank" rel="noopener noreferrer">nannieeii</a></td>
+                  <td class="num">308</td>
+                  <td class="num">206</td>
+                  <td class="num">11</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">3.57%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/mean.tita" target="_blank" rel="noopener noreferrer">mean.tita</a></td>
+                  <td class="num">279</td>
+                  <td class="num">219</td>
+                  <td class="num">0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td class="er">0.72%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/kittyivy_" target="_blank" rel="noopener noreferrer">kittyivy_</a></td>
+                  <td class="num">202</td>
+                  <td class="num">181</td>
+                  <td class="num">7</td>
+                  <td>0</td>
+                  <td>6</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="er">6.93%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                
+                <tr>
+                  
+                  <td><a href="https://instagram.com/platyplaty.13" target="_blank" rel="noopener noreferrer">platyplaty.13</a></td>
+                  <td class="num">198</td>
+                  <td class="num">129</td>
+                  <td class="num">2</td>
+                  <td>2</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td class="er">2.02%</td>
+                  <td><span class="tag tag-average">👁️ 🟡 Average</span></td>
+                  <td><span class="tag tag-moderate">👍 🟡 Moderate</span></td>
+                </tr>
+                </tbody>
+        </table>
+      </div>
+    </div>
+    
+  </div>
+</div>
+</div>
+<footer>Prepared for <strong>Molly Tea</strong> · Instagram KOL Campaign Report</footer>
+<script>
+  var sortableColumns = ['Views', 'Reach', 'Likes', 'Comments', 'Shares', 'Reposts', 'Saves', 'ER %'];
+
+  function initPanelSort(panel) {
+    panel.querySelectorAll('.table-wrapper table').forEach(function (table) {
+      if (table.dataset.sortInit === '1') return;
+      table.dataset.sortInit = '1';
+      var headerCells = Array.from(table.querySelectorAll('thead th'));
+      var tbody = table.querySelector('tbody');
+      if (!tbody) return;
+
+      headerCells.forEach(function (th, index) {
+        var baseLabel = th.textContent.trim();
+        if (!sortableColumns.includes(baseLabel)) return;
+
+        th.classList.add('sortable');
+        th.dataset.order = '';
+        th.dataset.baseLabel = baseLabel;
+        th.textContent = baseLabel + ' ↕';
+
+        th.addEventListener('click', function () {
+          var nextOrder = th.dataset.order === 'desc' ? 'asc' : 'desc';
+          var rows = Array.from(tbody.querySelectorAll('tr'));
+
+          rows.sort(function (rowA, rowB) {
+            var a = rowA.cells[index].textContent.trim().replace(/,/g, '').replace('%', '');
+            var b = rowB.cells[index].textContent.trim().replace(/,/g, '').replace('%', '');
+            var aNum = Number(a);
+            var bNum = Number(b);
+            if (!isFinite(aNum)) aNum = 0;
+            if (!isFinite(bNum)) bNum = 0;
+            return nextOrder === 'asc' ? aNum - bNum : bNum - aNum;
+          });
+
+          rows.forEach(function (row) { tbody.appendChild(row); });
+
+          headerCells.forEach(function (cell) {
+            if (!cell.classList.contains('sortable')) return;
+            cell.classList.remove('active');
+            cell.textContent = cell.dataset.baseLabel + ' ↕';
+          });
+
+          th.classList.add('active');
+          th.dataset.order = nextOrder;
+          th.textContent = th.dataset.baseLabel + (nextOrder === 'asc' ? ' ↑' : ' ↓');
+        });
+      });
+    });
+  }
+
+  function initPanelTabs(panel) {
+    panel.querySelectorAll('.table-tab-btn').forEach(function (btn) {
+      if (btn.dataset.tabInit === '1') return;
+      btn.dataset.tabInit = '1';
+      btn.addEventListener('click', function () {
+        var targetId = btn.dataset.tabTarget;
+        panel.querySelectorAll('.table-tab-btn').forEach(function (tabBtn) {
+          tabBtn.classList.toggle('active', tabBtn === btn);
+        });
+        panel.querySelectorAll('.table-panel').forEach(function (p) {
+          p.classList.toggle('active', p.id === targetId);
+        });
+      });
+    });
+  }
+
+  function activateCampaign(campaignId) {
+    document.querySelectorAll('.campaign-pill').forEach(function (pill) {
+      pill.classList.toggle('active', pill.dataset.campaign === campaignId);
+    });
+    document.querySelectorAll('.campaign-panel').forEach(function (panel) {
+      var active = panel.dataset.campaign === campaignId;
+      panel.classList.toggle('active', active);
+      if (active) {
+        initPanelSort(panel);
+        initPanelTabs(panel);
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.campaign-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        activateCampaign(pill.dataset.campaign);
+      });
+    });
+
+    document.querySelectorAll('.mobile-tooltip-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var panel = btn.closest('.campaign-panel');
+        var targetId = btn.dataset.tooltipTarget;
+        panel.querySelectorAll('.mobile-tooltip').forEach(function (tip) {
+          if (tip.id !== targetId) tip.classList.remove('show');
+        });
+        var target = document.getElementById(targetId);
+        if (target) target.classList.toggle('show');
+      });
+    });
+
+    var defaultCampaign = document.querySelector('.campaign-pill.active');
+    activateCampaign(defaultCampaign ? defaultCampaign.dataset.campaign : 'all');
+  });
+</script>
+</body>
+</html>
